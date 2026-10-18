@@ -1,0 +1,4 @@
+[submodule ".essence/harness"]
+	path = .essence/harness
+	url = https://github.com/nicholasjhenry/essence-harness
+	branch = develop
