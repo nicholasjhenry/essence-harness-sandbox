@@ -25,6 +25,13 @@ defmodule Shortener.Shared.ShortCode do
     generate(Enum.take(characters ++ usable, @length))
   end
 
+  @doc "True if the value has the form of a short code."
+  @spec valid?(term()) :: boolean()
+  def valid?(value) when is_binary(value),
+    do: byte_size(value) == @length and value |> to_charlist() |> Enum.all?(&(&1 in @alphabet))
+
+  def valid?(_value), do: false
+
   @spec tag(String.t()) :: String.t()
   def tag(short_code), do: "short_code:" <> short_code
 end

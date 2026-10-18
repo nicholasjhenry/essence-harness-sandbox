@@ -62,6 +62,11 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Swoosh keeps each email in its local mailbox. `/dev/mailbox` shows it in
+# development. No adapter sends an email out of the computer.
+config :shortener, Shortener.Mailer, adapter: Swoosh.Adapters.Local
+config :swoosh, :api_client, false
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

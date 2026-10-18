@@ -24,7 +24,7 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Live do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
       <.header>
         Shorten a link
         <:subtitle>Paste a long URL, and get a short URL for it.</:subtitle>

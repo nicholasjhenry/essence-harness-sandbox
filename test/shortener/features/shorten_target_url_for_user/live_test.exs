@@ -2,35 +2,45 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.LiveTest do
   use ShortenerWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
+  import Shortener.LoginFixtures
 
   alias Shortener.Features.ShortenTargetUrlForUser.{Command, CommandHandler}
 
   defp shorten_links(email_address, count) do
     command =
       %Command{}
-      |> Command.changeset(%{
-        "email_address" => email_address,
-        "target_url" => "https://example.com"
-      })
+      |> Command.changeset(%{"target_url" => "https://example.com"})
       |> Ecto.Changeset.apply_action!(:insert)
 
+    scope = login_scope(email_address)
+
     for n <- 1..count,
-        do: {:ok, _} = CommandHandler.handle(command, ["code#{100 + n}"], DateTime.utc_now())
+        do:
+          {:ok, _} = CommandHandler.handle(scope, command, ["code#{100 + n}"], DateTime.utc_now())
   end
 
-  defp submit(view, email_address) do
+  defp submit(view) do
     view
-    |> form("#shorten-for-user-form",
-      command: %{email_address: email_address, target_url: "https://example.com/path"}
-    )
+    |> form("#shorten-for-user-form", command: %{target_url: "https://example.com/path"})
     |> render_submit()
   end
 
-  describe "shortening a target URL for a user on the page" do
-    test "shows the short URL and the link usage given a valid submission", %{conn: conn} do
-      {:ok, view, _html} = live(conn, ~p"/user-links")
+  describe "shortening a target URL on the page of the links of a user" do
+    test "redirects a visitor to the login page", %{conn: conn} do
+      assert {:error, {:redirect, %{to: "/log-in"}}} = live(conn, ~p"/user-links")
+    end
 
-      submit(view, "ada@example.com")
+    test "shows the link usage of the logged-in user on mount", %{conn: conn} do
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
+
+      assert has_element?(view, "#link-usage-count", "0 of 10 links")
+      refute has_element?(view, "#shorten-for-user-form input[name='command[email_address]']")
+    end
+
+    test "shows the short URL and the link usage given a valid submission", %{conn: conn} do
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
+
+      submit(view)
 
       assert has_element?(view, "#short-url")
       assert has_element?(view, "#link-usage-count", "1 of 10 links")
@@ -39,26 +49,18 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.LiveTest do
 
     test "shows the link limit error given a user at the link limit", %{conn: conn} do
       shorten_links("ada@example.com", 10)
-      {:ok, view, _html} = live(conn, ~p"/user-links")
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
 
-      submit(view, "ada@example.com")
+      submit(view)
 
       assert has_element?(
                view,
                "#shorten-for-user-form",
-               "the user has reached the link limit of the plan"
+               "you have reached the link limit of your plan"
              )
 
       assert has_element?(view, "#link-usage-count", "10 of 10 links")
       refute has_element?(view, "#short-url")
-    end
-
-    test "shows an error given an email address with no domain", %{conn: conn} do
-      {:ok, view, _html} = live(conn, ~p"/user-links")
-
-      submit(view, "ada")
-
-      assert has_element?(view, "#shorten-for-user-form", "must have the form name@domain")
     end
   end
 end

@@ -1,6 +1,7 @@
 defmodule Shortener.Features.ShortenTargetUrlForUser.Live do
   @moduledoc """
-  The page on which a person shortens a target URL for a user.
+  The page on which a logged-in user shortens a target URL. The user is the
+  owner of the link.
   """
 
   use ShortenerWeb, :live_view
@@ -16,23 +17,22 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.Live do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Shorten a link for a user")
+     |> assign(:page_title, "Your links")
      |> assign(:link, nil)
-     |> assign(:usage, nil)
+     |> assign(:usage, LinkUsage.of(socket.assigns.current_scope.user.email_address))
      |> assign_form(Command.changeset(%Command{}, %{}))}
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
       <.header>
-        Shorten a link for a user
-        <:subtitle>The link counts toward the link limit of the plan of the user.</:subtitle>
+        Your links
+        <:subtitle>Each link counts toward the link limit of your plan.</:subtitle>
       </.header>
 
       <.form for={@form} id="shorten-for-user-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:email_address]} type="email" label="Email address" phx-debounce="300" />
         <.input
           field={@form[:target_url]}
           type="url"
@@ -65,41 +65,45 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.Live do
   def handle_event("save", %{"command" => params}, socket) do
     changeset = Command.changeset(%Command{}, params)
     candidates = Enum.map(1..@candidates, fn _ -> ShortCode.generate() end)
+    scope = socket.assigns.current_scope
 
     with {:ok, command} <- Ecto.Changeset.apply_action(changeset, :insert),
          {:ok, %LinkShortened{} = link} <-
-           CommandHandler.handle(command, candidates, DateTime.utc_now()) do
+           CommandHandler.handle(scope, command, candidates, DateTime.utc_now()) do
       {:noreply,
        socket
        |> clear_flash()
        |> assign(:link, link)
-       |> assign(:usage, LinkUsage.of(command.email_address))
-       |> assign_form(Command.changeset(%Command{}, %{"email_address" => command.email_address}))}
+       |> assign(:usage, LinkUsage.of(scope.user.email_address))
+       |> assign_form(Command.changeset(%Command{}, %{}))}
     else
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, socket |> assign(:link, nil) |> assign(:usage, nil) |> assign_form(changeset)}
+        {:noreply, socket |> assign(:link, nil) |> assign_form(changeset)}
 
       {:error, :link_limit_reached} ->
-        email_address = Ecto.Changeset.get_field(changeset, :email_address)
-
         changeset =
           Ecto.Changeset.add_error(
             changeset,
-            :email_address,
-            "the user has reached the link limit of the plan"
+            :target_url,
+            "you have reached the link limit of your plan"
           )
 
         {:noreply,
          socket
          |> assign(:link, nil)
-         |> assign(:usage, LinkUsage.of(email_address))
+         |> assign(:usage, LinkUsage.of(scope.user.email_address))
          |> assign_form(changeset, action: :insert)}
+
+      {:error, :not_logged_in} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Log in to open this page.")
+         |> redirect(to: ~p"/log-in")}
 
       {:error, _conflict} ->
         {:noreply,
          socket
          |> assign(:link, nil)
-         |> assign(:usage, nil)
          |> put_flash(:error, "The link shortener could not make a short code. Try again.")}
     end
   end

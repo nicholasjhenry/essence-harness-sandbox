@@ -1,51 +1,42 @@
 defmodule Shortener.Features.AssignPlanToUser.Live do
   @moduledoc """
-  The page on which a person puts a user on a plan.
+  The page on which a logged-in user selects the plan of that user.
   """
 
   use ShortenerWeb, :live_view
 
-  alias Shortener.Features.AssignPlanToUser.{Command, CommandHandler}
+  alias Shortener.Features.AssignPlanToUser.{Command, CommandHandler, PlanOfUser}
   alias Shortener.Shared.{Plan, PlanAssignedToUser}
 
   @impl true
   def mount(_params, _session, socket) do
+    plan = PlanOfUser.of(socket.assigns.current_scope.user.email_address)
+
     {:ok,
      socket
-     |> assign(:page_title, "Assign a plan")
+     |> assign(:page_title, "Your plan")
      |> assign(:plan_options, Enum.map(Plan.all(), &{plan_label(&1), &1.name}))
-     |> assign(:assignment, nil)
-     |> assign_form(Command.changeset(%Command{}, %{"plan" => "pro"}))}
+     |> assign(:plan, plan)
+     |> assign_form(Command.changeset(%Command{}, %{"plan" => plan.name}))}
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
       <.header>
-        Assign a plan to a user
+        Your plan
         <:subtitle>
-          A user is known by an email address. A user with no plan is on the Free plan.
+          <span id="current-plan-email">{@current_scope.user.email_address}</span>
+          is on the <span id="current-plan" class="font-semibold">{@plan.title}</span>
+          plan.
         </:subtitle>
       </.header>
 
       <.form for={@form} id="assign-plan-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:email_address]} type="email" label="Email address" phx-debounce="300" />
         <.input field={@form[:plan]} type="select" label="Plan" options={@plan_options} />
-        <.button variant="primary" phx-disable-with="Assigning...">Assign the plan</.button>
+        <.button variant="primary" phx-disable-with="Changing...">Change the plan</.button>
       </.form>
-
-      <div
-        :if={@assignment}
-        id="plan-assignment"
-        class="rounded-box border border-success/40 bg-success/10 p-4"
-      >
-        <p class="font-semibold">
-          <span id="plan-assignment-email">{@assignment.email_address}</span>
-          is on the <span id="plan-assignment-plan">{plan_title(@assignment.plan)}</span>
-          plan.
-        </p>
-      </div>
     </Layouts.app>
     """
   end
@@ -58,25 +49,34 @@ defmodule Shortener.Features.AssignPlanToUser.Live do
 
   def handle_event("save", %{"command" => params}, socket) do
     changeset = Command.changeset(%Command{}, params)
+    scope = socket.assigns.current_scope
 
     with {:ok, command} <- Ecto.Changeset.apply_action(changeset, :insert),
-         {:ok, %PlanAssignedToUser{} = assignment} <-
-           CommandHandler.handle(command, DateTime.utc_now()) do
+         {:ok, %PlanAssignedToUser{plan: name}} <-
+           CommandHandler.handle(scope, command, DateTime.utc_now()) do
+      {:ok, plan} = Plan.fetch(name)
+
       {:noreply,
        socket
-       |> assign(:assignment, assignment)
-       |> assign_form(Command.changeset(%Command{}, %{"plan" => command.plan}))}
+       |> assign(:plan, plan)
+       |> put_flash(:info, "You are on the #{plan.title} plan.")
+       |> assign_form(Command.changeset(%Command{}, %{"plan" => name}))}
     else
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
 
       {:error, :plan_already_assigned} ->
-        changeset = Ecto.Changeset.add_error(changeset, :plan, "the user is on this plan")
+        changeset = Ecto.Changeset.add_error(changeset, :plan, "you are on this plan")
         {:noreply, assign_form(socket, changeset, action: :insert)}
 
-      {:error, :append_condition_failed} ->
+      {:error, :not_logged_in} ->
         {:noreply,
-         put_flash(socket, :error, "The plan of the user changed at the same time. Try again.")}
+         socket
+         |> put_flash(:error, "Log in to open this page.")
+         |> redirect(to: ~p"/log-in")}
+
+      {:error, :append_condition_failed} ->
+        {:noreply, put_flash(socket, :error, "Your plan changed at the same time. Try again.")}
     end
   end
 
@@ -85,9 +85,4 @@ defmodule Shortener.Features.AssignPlanToUser.Live do
 
   defp plan_label(%Plan{title: title, link_limit: nil}), do: "#{title} — any number of links"
   defp plan_label(%Plan{title: title, link_limit: limit}), do: "#{title} — #{limit} links"
-
-  defp plan_title(name) do
-    {:ok, plan} = Plan.fetch(name)
-    plan.title
-  end
 end

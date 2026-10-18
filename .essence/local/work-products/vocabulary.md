@@ -17,7 +17,15 @@ The terms of the domain of the link shortener. Each definition is a genus and a 
 - **link limit** — the number of links of one owner that the plan of the owner permits. A plan with no link limit permits any number of links.
 - **plan assignment** — an event in which the link shortener puts one user on one plan, at one time. It differs from the plan, which exists before and after each plan assignment.
 - **default plan** — the plan of a user who has no plan assignment. The default plan is the Free plan.
+- **resolution** — an event in which the link shortener finds the target URL of the link of one short URL, and sends the person to that target URL. It differs from the link, which the resolution reads and does not change.
+- **login token** — a secret of one use, made by the link shortener for one email address, that lets a person log in as the user of that email address. It differs from a session token, which a browser holds after the login.
+- **login link** — a URL of the link shortener whose path holds one login token, sent by email to the email address of the login token. It differs from a short URL, which refers to a target URL.
+- **login session** — a period in which the link shortener knows the person at one browser as one user, from the redemption of a login token to the logout. It differs from a user, who can have zero or more login sessions.
+- **session token** — a secret, held by one browser, that identifies one login session. It differs from a login token, which starts a login session and is then of no use.
+- **redemption** — an event in which the link shortener accepts one login token, and starts one login session for the user of the login token. It differs from a login link, which only carries the login token.
+- **logout** — an event in which the link shortener ends one login session. After the logout, its session token identifies no user.
 
 ---
 
 Authored by Nicholas Henry on Sat Oct 17 2026 at 10:08:34 PM EDT
+Changed by Nicholas Henry on Sat Oct 17 2026 at 10:55:34 PM EDT

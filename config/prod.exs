@@ -19,6 +19,10 @@ config :shortener, ShortenerWeb.Endpoint,
     ]
   ]
 
+# No local mailbox in production. The production adapter of Swoosh is not
+# configured.
+config :swoosh, local: false
+
 # Do not print debug messages in production
 config :logger, level: :info
 

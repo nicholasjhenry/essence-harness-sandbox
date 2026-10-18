@@ -44,8 +44,20 @@ defmodule ShortenerWeb.Layouts do
       <nav class="flex-none">
         <ul class="flex items-center gap-2">
           <li><.link navigate={~p"/"} class="btn btn-ghost btn-sm">Shorten</.link></li>
-          <li><.link navigate={~p"/user-links"} class="btn btn-ghost btn-sm">For a user</.link></li>
-          <li><.link navigate={~p"/plans"} class="btn btn-ghost btn-sm">Plans</.link></li>
+          <%= if @current_scope do %>
+            <li><.link navigate={~p"/user-links"} class="btn btn-ghost btn-sm">Your links</.link></li>
+            <li><.link navigate={~p"/plans"} class="btn btn-ghost btn-sm">Your plan</.link></li>
+            <li id="current-user" class="text-sm opacity-70">{@current_scope.user.email_address}</li>
+            <li>
+              <.link href={~p"/log-out"} method="delete" id="log-out" class="btn btn-ghost btn-sm">
+                Log out
+              </.link>
+            </li>
+          <% else %>
+            <li>
+              <.link navigate={~p"/log-in"} id="log-in" class="btn btn-ghost btn-sm">Log in</.link>
+            </li>
+          <% end %>
           <li><.theme_toggle /></li>
         </ul>
       </nav>

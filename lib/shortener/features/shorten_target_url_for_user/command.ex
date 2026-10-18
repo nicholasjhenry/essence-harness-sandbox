@@ -1,29 +1,27 @@
 defmodule Shortener.Features.ShortenTargetUrlForUser.Command do
   @moduledoc """
-  The request to shorten a target URL for a user, who is the owner of the
-  link.
+  The request of a logged-in user to shorten a target URL. The user is the
+  owner of the link.
   """
 
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Shortener.Shared.{EmailAddress, TargetUrl}
+  alias Shortener.Shared.TargetUrl
 
   @primary_key false
   embedded_schema do
-    field :email_address, :string
     field :target_url, :string
   end
 
-  @type t :: %__MODULE__{email_address: String.t(), target_url: String.t()}
+  @type t :: %__MODULE__{target_url: String.t()}
 
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(command, attrs) do
     command
-    |> cast(attrs, [:email_address, :target_url])
-    |> validate_required([:email_address, :target_url])
-    |> EmailAddress.validate(:email_address)
+    |> cast(attrs, [:target_url])
+    |> validate_required([:target_url])
     |> TargetUrl.validate(:target_url)
   end
 end

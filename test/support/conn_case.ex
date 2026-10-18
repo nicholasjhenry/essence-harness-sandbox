@@ -35,4 +35,10 @@ defmodule ShortenerWeb.ConnCase do
     Shortener.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
+
+  @doc "Logs in the connection as the user of the email address."
+  def log_in_user(conn, email_address) do
+    session_token = Shortener.LoginFixtures.start_login_session(email_address)
+    Plug.Test.init_test_session(conn, %{ShortenerWeb.UserAuth.session_key() => session_token})
+  end
 end

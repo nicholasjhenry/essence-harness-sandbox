@@ -17,6 +17,9 @@ config :shortener, ShortenerWeb.Endpoint,
   secret_key_base: "/BJplmoXvOB8KvaLThetfkgK8RWCVWFvW1j25buXRoIcdTqZm4nL54Xo0Om/dDMK",
   server: false
 
+# Each email of a test stays in the test process.
+config :shortener, Shortener.Mailer, adapter: Swoosh.Adapters.Test
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

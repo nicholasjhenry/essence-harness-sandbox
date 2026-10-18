@@ -1,34 +1,40 @@
 defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
   use Shortener.DataCase, async: false
 
+  import Shortener.LoginFixtures
+
   alias Shortener.DCB.DecisionModel
   alias Shortener.EventStore
-  alias Shortener.Features.AssignPlanToUser
+  alias Shortener.Features.{AssignPlanToUser, EndLoginSessionOfUser}
   alias Shortener.Features.ShortenTargetUrlForUser.{Command, CommandHandler, LinkUsage}
   alias Shortener.Shared.LinkShortened
 
   @now ~U[2026-10-17 12:00:00.000000Z]
   @url "https://example.com/a/long/path"
 
-  defp command(email_address, target_url \\ @url) do
+  defp command(target_url \\ @url) do
     %Command{}
-    |> Command.changeset(%{"email_address" => email_address, "target_url" => target_url})
+    |> Command.changeset(%{"target_url" => target_url})
     |> Ecto.Changeset.apply_action!(:insert)
   end
 
   defp assign_plan(email_address, plan) do
-    {:ok, _} =
+    command =
       %AssignPlanToUser.Command{}
-      |> AssignPlanToUser.Command.changeset(%{"email_address" => email_address, "plan" => plan})
+      |> AssignPlanToUser.Command.changeset(%{"plan" => plan})
       |> Ecto.Changeset.apply_action!(:insert)
-      |> AssignPlanToUser.CommandHandler.handle(@now)
+
+    {:ok, _} = AssignPlanToUser.CommandHandler.handle(login_scope(email_address), command, @now)
   end
 
   defp shorten_links(email_address, count) do
+    scope = login_scope(email_address)
+
     for n <- 1..count do
       {:ok, _} =
         CommandHandler.handle(
-          command(email_address),
+          scope,
+          command(),
           ["#{String.first(email_address)}code#{String.pad_leading("#{n}", 2, "0")}"],
           @now
         )
@@ -43,13 +49,20 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
                 owner_email_address: "ada@example.com",
                 target_url: @url
               }} =
-               CommandHandler.handle(command("ADA@example.com "), ["aaaaaaa"], @now)
+               CommandHandler.handle(
+                 login_scope("ADA@example.com "),
+                 command(),
+                 ["aaaaaaa"],
+                 @now
+               )
     end
 
     test "tags the event with the short code and the user" do
-      {:ok, _} = CommandHandler.handle(command("ada@example.com"), ["aaaaaaa"], @now)
+      {:ok, _} =
+        CommandHandler.handle(login_scope("ada@example.com"), command(), ["aaaaaaa"], @now)
 
-      [%{event: %{tags: tags}}] = EventStore.read(Shortener.DCB.Query.all(), [])
+      query = %Shortener.DCB.Query{items: [%Shortener.DCB.QueryItem{types: ["LinkShortened"]}]}
+      [%{event: %{tags: tags}}] = EventStore.read(query, [])
       assert "short_code:aaaaaaa" in tags
       assert Enum.any?(tags, &String.starts_with?(&1, "user:"))
       refute Enum.any?(tags, &String.contains?(&1, "ada@example.com"))
@@ -59,7 +72,7 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
       shorten_links("ada@example.com", 10)
 
       assert {:error, :link_limit_reached} =
-               CommandHandler.handle(command("ada@example.com"), ["bbbbbbb"], @now)
+               CommandHandler.handle(login_scope("ada@example.com"), command(), ["bbbbbbb"], @now)
 
       assert %LinkUsage{link_count: 10} = LinkUsage.of("ada@example.com")
     end
@@ -69,7 +82,7 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
       shorten_links("ada@example.com", 10)
 
       assert {:ok, %LinkShortened{}} =
-               CommandHandler.handle(command("ada@example.com"), ["bbbbbbb"], @now)
+               CommandHandler.handle(login_scope("ada@example.com"), command(), ["bbbbbbb"], @now)
     end
 
     test "returns link limit reached given a user with eleven links moves from Pro to Free" do
@@ -78,7 +91,7 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
       assign_plan("ada@example.com", "free")
 
       assert {:error, :link_limit_reached} =
-               CommandHandler.handle(command("ada@example.com"), ["bbbbbbb"], @now)
+               CommandHandler.handle(login_scope("ada@example.com"), command(), ["bbbbbbb"], @now)
     end
 
     test "does not count the links of a different user or of a visitor" do
@@ -89,14 +102,15 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
       :ok = EventStore.append(LinkShortened.to_event(visitor_link), nil)
 
       assert {:ok, %LinkShortened{owner_email_address: "ada@example.com"}} =
-               CommandHandler.handle(command("ada@example.com"), ["bbbbbbb"], @now)
+               CommandHandler.handle(login_scope("ada@example.com"), command(), ["bbbbbbb"], @now)
     end
 
     test "returns short code taken given a link has each candidate" do
-      {:ok, _} = CommandHandler.handle(command("grace@example.com"), ["aaaaaaa"], @now)
+      {:ok, _} =
+        CommandHandler.handle(login_scope("grace@example.com"), command(), ["aaaaaaa"], @now)
 
       assert {:error, :short_code_taken} =
-               CommandHandler.handle(command("ada@example.com"), ["aaaaaaa"], @now)
+               CommandHandler.handle(login_scope("ada@example.com"), command(), ["aaaaaaa"], @now)
     end
 
     test "fails the append given a link of the same user after the read" do
@@ -107,7 +121,8 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
 
       {_model, condition} = DecisionModel.build(EventStore, projections)
 
-      {:ok, _} = CommandHandler.handle(command("ada@example.com"), ["aaaaaaa"], @now)
+      {:ok, _} =
+        CommandHandler.handle(login_scope("ada@example.com"), command(), ["aaaaaaa"], @now)
 
       event =
         LinkShortened.to_event(%LinkShortened{
@@ -149,6 +164,39 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
         })
 
       assert :ok = EventStore.append(event, condition)
+    end
+  end
+
+  describe "authorizing the shortening" do
+    test "returns not logged in given the login session of the scope is ended" do
+      session_token = start_login_session("ada@example.com")
+      scope = ShortenerWeb.UserAuth.scope_for_session_token(session_token)
+      :ok = EndLoginSessionOfUser.CommandHandler.handle(session_token, @now)
+
+      assert {:error, :not_logged_in} = CommandHandler.handle(scope, command(), ["aaaaaaa"], @now)
+      assert %LinkUsage{link_count: 0} = LinkUsage.of("ada@example.com")
+    end
+
+    test "fails the append given the logout of the login session after the read" do
+      session_token = start_login_session("ada@example.com")
+      scope = ShortenerWeb.UserAuth.scope_for_session_token(session_token)
+
+      projections = [
+        login_session: Shortener.Projections.LoginSessionUser.new(scope.session_token_hash)
+      ]
+
+      {_model, condition} = DecisionModel.build(EventStore, projections)
+      :ok = EndLoginSessionOfUser.CommandHandler.handle(session_token, @now)
+
+      event =
+        LinkShortened.to_event(%LinkShortened{
+          short_code: "aaaaaaa",
+          target_url: @url,
+          owner_email_address: "ada@example.com",
+          shortened_at: @now
+        })
+
+      assert {:error, :append_condition_failed} = EventStore.append(event, condition)
     end
   end
 

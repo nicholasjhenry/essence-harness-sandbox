@@ -13,4 +13,18 @@ defmodule Shortener.Shared.ShortCodeTest do
       assert length(Enum.uniq(codes)) == 200
     end
   end
+
+  describe "checking the form of a short code" do
+    test "is true for a generated short code" do
+      assert ShortCode.valid?(ShortCode.generate())
+    end
+
+    test "is false for a value of a different length, a character that is not a letter or a digit, and a value that is not a string" do
+      refute ShortCode.valid?("Abc123")
+      refute ShortCode.valid?("Abc12345")
+      refute ShortCode.valid?("Abc-123")
+      refute ShortCode.valid?("Abcé123")
+      refute ShortCode.valid?(nil)
+    end
+  end
 end
