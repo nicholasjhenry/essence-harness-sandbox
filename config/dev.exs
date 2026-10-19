@@ -52,6 +52,9 @@ config :shortener, ShortenerWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :shortener, dev_routes: true
 
+# Log each login link, so that a person can open it from the terminal.
+config :shortener, log_login_links: true
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
 

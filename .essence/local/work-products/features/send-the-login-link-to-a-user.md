@@ -40,6 +40,7 @@ A person types an email address on the login page. The link shortener makes a lo
 3. `CommandHandler` calls `Decider.run(Shortener.EventStore, [], decide)`. No hard constraint applies to a new login token, so the decision model is empty. `decide` gives `{:ok, [LoginLinkSent.to_event(...)]}` with `Secret.hash(token)`.
 4. `Live` calls `Mailer.deliver(LoginEmail.new(email_address, url(~p"/log-in/#{token}")))`.
 5. `Live` shows "A login link is on its way to <email address>." and the form again.
+6. If the setting `:log_login_links` is true, `Live` logs "Login link for <email address>: <login link>" at the level `info`. Only `config/dev.exs` sets it, so that a person can open the login link from the terminal. A login link in a log of production would let each reader of the log log in as the user.
 
 The route is in the `:current_user` live session, which the design of "Redeem the login token of a user" adds, in the scope that pipes through `:browser`. A visitor needs it.
 
@@ -48,6 +49,7 @@ The page sends a login link to any email address, with no limit of rate. The fin
 ### Tests
 
 - The command handler: the event holds the hash of the token and not the token, and has the two tags.
+- The LiveView: with the setting, a valid submission logs the login link. With no setting, it logs no login link.
 - The LiveView: a valid submission shows the message, and Swoosh delivers one email to the email address with the login link. An email address with no domain shows an error, and delivers no email.
 
 ---
@@ -57,3 +59,4 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 10:56:47 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 10:58:21 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 11:11:38 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 11:13:22 PM EDT
+Changed by Nicholas Henry on Mon Oct 19 2026 at 5:06:50 PM EDT

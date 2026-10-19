@@ -5,6 +5,8 @@ defmodule Shortener.Features.SendLoginLinkToUser.Live do
 
   use ShortenerWeb, :live_view
 
+  require Logger
+
   alias Shortener.Features.SendLoginLinkToUser.{Command, CommandHandler, LoginEmail}
   alias Shortener.Mailer
   alias Shortener.Shared.Secret
@@ -52,10 +54,13 @@ defmodule Shortener.Features.SendLoginLinkToUser.Live do
     changeset = Command.changeset(%Command{}, params)
     token = Secret.generate()
 
+    login_link = url(~p"/log-in/#{token}")
+
     with {:ok, command} <- Ecto.Changeset.apply_action(changeset, :insert),
          {:ok, _sent} <- CommandHandler.handle(command, token, DateTime.utc_now()),
-         {:ok, _email} <-
-           Mailer.deliver(LoginEmail.new(command.email_address, url(~p"/log-in/#{token}"))) do
+         {:ok, _email} <- Mailer.deliver(LoginEmail.new(command.email_address, login_link)) do
+      log_login_link(command.email_address, login_link)
+
       {:noreply,
        socket
        |> assign(:sent_to, command.email_address)
@@ -70,6 +75,13 @@ defmodule Shortener.Features.SendLoginLinkToUser.Live do
          |> assign(:sent_to, nil)
          |> put_flash(:error, "The link shortener could not send the login link. Try again.")}
     end
+  end
+
+  # Only development turns this on. A login link in a log of production would
+  # let each reader of the log log in as the user.
+  defp log_login_link(email_address, login_link) do
+    if Application.get_env(:shortener, :log_login_links, false),
+      do: Logger.info("Login link for #{email_address}: #{login_link}")
   end
 
   defp assign_form(socket, changeset, opts \\ []),
