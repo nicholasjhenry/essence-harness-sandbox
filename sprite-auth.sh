@@ -68,7 +68,8 @@ printf '%s\n' "$token" | sprite exec "${sprite_args[@]}" --stdin -- sh -c '
   command -v gh >/dev/null || { echo "gh is not installed on the sprite" >&2; exit 1; }
   gh auth login --hostname github.com --git-protocol https --with-token
   gh auth setup-git --hostname github.com
-  gh auth status --hostname github.com
+  # gh shows the start of the token. The filter keeps it out of the output.
+  gh auth status --hostname github.com 2>&1 | grep -v "Token:"
 '
 unset token
 
