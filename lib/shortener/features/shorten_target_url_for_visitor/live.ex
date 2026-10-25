@@ -9,7 +9,7 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Live do
   import ShortenerWeb.LinkComponents
 
   alias Shortener.Features.ShortenTargetUrlForVisitor.{Command, CommandHandler}
-  alias Shortener.Shared.{LinkShortened, ShortCodeChoice}
+  alias Shortener.Shared.{LinkShortened, ShortCodeAvailability, ShortCodeChoice}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -17,6 +17,7 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Live do
      socket
      |> assign(:page_title, "Shorten a link")
      |> assign(:link, nil)
+     |> assign(:availability, nil)
      |> assign_form(Command.changeset(%Command{}, %{}))}
   end
 
@@ -37,7 +38,7 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Live do
           placeholder="https://example.com/a/long/path"
           phx-debounce="300"
         />
-        <.short_code_input field={@form[:short_code]} />
+        <.short_code_input field={@form[:short_code]} availability={@availability} />
         <.button variant="primary" phx-disable-with="Shortening...">Shorten</.button>
       </.form>
 
@@ -48,11 +49,17 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Live do
 
   @impl true
   def handle_event("validate", %{"command" => params}, socket) do
-    {:noreply, assign_form(socket, Command.changeset(%Command{}, params), action: :validate)}
+    changeset = Command.changeset(%Command{}, params)
+
+    {:noreply,
+     socket
+     |> assign_form(changeset, action: :validate)
+     |> assign_availability(changeset)}
   end
 
   def handle_event("save", %{"command" => params}, socket) do
     changeset = Command.changeset(%Command{}, params)
+    socket = assign(socket, :availability, nil)
 
     with {:ok, command} <- Ecto.Changeset.apply_action(changeset, :insert),
          candidates = ShortCodeChoice.candidates(command.short_code),
@@ -65,7 +72,11 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Live do
        |> assign_form(Command.changeset(%Command{}, %{}))}
     else
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, socket |> assign(:link, nil) |> assign_form(changeset)}
+        {:noreply,
+         socket
+         |> assign(:link, nil)
+         |> assign_form(changeset)
+         |> assign_availability(changeset)}
 
       {:error, conflict} ->
         chosen = Ecto.Changeset.get_change(changeset, :short_code)
@@ -92,4 +103,9 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Live do
 
   defp assign_form(socket, changeset, opts \\ []),
     do: assign(socket, :form, to_form(changeset, opts))
+
+  defp assign_availability(socket, changeset) do
+    short_code = Ecto.Changeset.get_change(changeset, :short_code)
+    assign(socket, :availability, ShortCodeAvailability.check(short_code))
+  end
 end

@@ -40,6 +40,7 @@ The properties and the associations of each concept of the domain vocabulary, in
 
 - **Properties:**
   - characters — seven letters or digits, from `A`–`Z`, `a`–`z`, and `0`–`9`.
+  - availability — `available`, if no link has the short code and no deleted link had it. `taken`, otherwise. Hard constraint 1 gives it.
 - **Associations:**
   - a short code identifies exactly one link.
   - a short code is made by the link shortener, or is chosen by the person who shortens the target URL. The link does not record which.
@@ -233,6 +234,12 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **Alternative that the agent did not take: the removal of an expiration.** The request names no removal. The owner moves the time of expiration later in its place.
 - **Alternative that the agent did not take: `410 Gone` for a link whose time of expiration is past.** The answer would say that a link had the short code. A deleted link gets `404 Not Found` for the same reason.
 - **Alternative that the agent did not take: a link whose time of expiration is past does not count against the link limit.** The link still exists, and its owner still sees it. The count of the links of an owner would then read the clock, which decision 6 of the architecture keeps out of each projection.
+- **Source of the walkthrough of the check of the availability of a short code, on Sun Oct 25 2026.** The engineer requested "implement Check the availability of a short code.", and delegated the decisions of the walkthrough: "delegated". The check adds the property availability to the short code. It uses the concepts short code, link, and deletion of Part 1, and adds no concept and no association.
+- **The availability of a short code is a read, and decides nothing.** The form shows it before the submission. The decision at the submission checks hard constraint 1 again, because a different person can take the short code between the check and the submission. The append condition then decides which of two submissions makes the link.
+- **A short code of a deleted link is taken.** No new link gets it, by hard constraint 1. A check that gave `available` would then contradict the submission.
+- **The check gives no more than the submission gives.** A submission of a short code that a link has already says that a link has it. The check says it before the submission, to each visitor and each user. It does not say whose link has the short code, or whether the link is deleted or expired.
+- **Only a short code of the form of a short code is checked.** A value that is not seven letters or digits gets the error of its form, and no check.
+- **Alternative that the agent did not take: a button that the page disables while the short code is taken.** The availability can change before the submission, so the submission keeps its own check. A disabled button adds a second check of the same fact, and it can be out of date.
 
 ---
 
@@ -244,3 +251,4 @@ Changed by Nicholas Henry on Sat Oct 24 2026 at 9:55:25 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:29:32 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:52:38 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 5:11:28 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 9:23:16 PM UTC

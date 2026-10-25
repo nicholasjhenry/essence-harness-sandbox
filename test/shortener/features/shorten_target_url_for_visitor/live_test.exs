@@ -3,6 +3,8 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.LiveTest do
 
   import Phoenix.LiveViewTest
 
+  alias Shortener.Features.ShortenTargetUrlForVisitor.{Command, CommandHandler}
+
   @url "https://example.com/a/long/path"
 
   defp submit(view, command) do
@@ -155,6 +157,105 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.LiveTest do
                "must be seven characters from A–Z, a–z, and 0–9"
              )
     end
+  end
+
+  describe "checking the availability of the short code on the page" do
+    test "shows no availability given the page on mount", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      assert availability(view) == ""
+    end
+
+    test "shows that no link has the short code given a change of the field to a free short code",
+         %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      change(view, "Summer1")
+
+      assert availability(view) == "No link has this short code."
+    end
+
+    test "shows that a link has the short code given a change of the field to the short code of a link",
+         %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+      submit(view, %{target_url: @url, short_code: "Summer1"})
+
+      change(view, "Summer1")
+
+      assert availability(view) == "A link has this short code. Choose a different short code."
+    end
+
+    test "shows the availability of the short code without its spaces given a change of the field with spaces",
+         %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+      submit(view, %{target_url: @url, short_code: "Summer1"})
+
+      change(view, " Summer1 ")
+
+      assert availability(view) == "A link has this short code. Choose a different short code."
+    end
+
+    test "shows no availability given a change of the field to a value of three characters",
+         %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      change(view, "abc")
+
+      assert availability(view) == ""
+    end
+
+    test "shows the error on the field given a submission of a short code that a link took after the check",
+         %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+      change(view, "Summer1")
+      assert availability(view) == "No link has this short code."
+
+      {:ok, _link} =
+        %Command{}
+        |> Command.changeset(%{"target_url" => @url, "short_code" => "Summer1"})
+        |> Ecto.Changeset.apply_action!(:insert)
+        |> CommandHandler.handle(["Summer1"], DateTime.utc_now())
+
+      submit(view, %{target_url: @url, short_code: "Summer1"})
+
+      assert has_element?(
+               view,
+               "#shorten-form",
+               "is the short code of a link. Choose a different short code"
+             )
+
+      refute has_element?(view, "#short-link")
+      assert availability(view) == ""
+    end
+
+    test "shows no availability given a new link with a chosen short code", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+      change(view, "Summer1")
+
+      submit(view, %{target_url: @url, short_code: "Summer1"})
+
+      assert has_element?(view, "#short-link")
+      assert availability(view) == ""
+    end
+
+    test "keeps the availability given a submission with a target URL that has no scheme",
+         %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+      change(view, "Summer1")
+
+      submit(view, %{target_url: "example.com", short_code: "Summer1"})
+
+      assert has_element?(view, "#shorten-form", "must be an http or https URL with a host")
+      assert availability(view) == "No link has this short code."
+    end
+  end
+
+  defp availability(view) do
+    view
+    |> element("#short-code-availability")
+    |> render()
+    |> String.replace(~r/<[^>]*>/, "")
+    |> String.trim()
   end
 
   defp change(view, short_code) do
