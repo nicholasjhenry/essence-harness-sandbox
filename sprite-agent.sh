@@ -15,8 +15,8 @@
 #
 # Run it on the computer of the engineer, from the root of the repository,
 # after ./sprite-auth.sh and ./sprite-setup.sh. Requirements: the Sprites CLI
-# `sprite`, logged in, and python3. The sprite needs the clone ~/app, clean,
-# on main, and `claude`.
+# `sprite`, logged in, and python3. The sprite needs `claude`, and the clone
+# ~/app with no uncommitted change. The script switches the clone to main.
 
 set -euo pipefail
 
@@ -95,10 +95,13 @@ if [[ -n "$dry_run" ]]; then
   exit 0
 fi
 
-# The session makes its own work branch from main, so the clone starts clean
-# and on main.
-[[ "$(in_sprite git branch --show-current)" == "main" ]] || fail "the clone $clone is not on main"
-[[ -z "$(in_sprite git status --porcelain)" ]] || fail "the clone $clone has changes"
+# The session makes its own work branch from main, so the clone starts clean,
+# on main, and up to date. A clean clone on the branch of an earlier endeavor
+# is switched to main. That branch stays in the clone and on GitHub.
+[[ -z "$(in_sprite git status --porcelain)" ]] || fail "the clone $clone has changes. Commit or remove them first."
+in_sprite git switch --quiet main
+in_sprite git pull --quiet --ff-only
+echo "sprite-agent: the clone $clone is on main, at $(in_sprite git log --oneline -1)."
 in_sprite sh -c 'command -v claude' >/dev/null || fail "claude is not installed in $sprite_name"
 
 before="$(sprite sessions list "${sprite_args[@]}" 2>/dev/null | awk '$1 ~ /^[0-9]+$/ {print $1}')"
