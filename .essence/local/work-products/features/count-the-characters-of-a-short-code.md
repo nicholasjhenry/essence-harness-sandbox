@@ -13,7 +13,7 @@
 | design inspection | 2026-10-25 |
 | code | 2026-10-25 |
 | code inspection | 2026-10-25 |
-| integration | |
+| integration | 2026-10-25 |
 
 ## Request
 
