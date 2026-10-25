@@ -63,4 +63,41 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.LiveTest do
       refute has_element?(view, "#short-url")
     end
   end
+
+  describe "choosing the short code on the page of the links of a user" do
+    test "shows the short URL of the chosen short code and counts the link given a free short code",
+         %{conn: conn} do
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
+
+      view
+      |> form("#shorten-for-user-form",
+        command: %{target_url: "https://example.com/path", short_code: "Summer1"}
+      )
+      |> render_submit()
+
+      assert view |> element("#short-url") |> render() =~ ~r"http://localhost:\d+/Summer1<"
+      assert has_element?(view, "#link-usage-count", "1 of 10 links")
+    end
+
+    test "shows the error on the field and keeps the link usage given a short code that a link has",
+         %{conn: conn} do
+      shorten_links("grace@example.com", 1)
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
+
+      view
+      |> form("#shorten-for-user-form",
+        command: %{target_url: "https://example.com/path", short_code: "code101"}
+      )
+      |> render_submit()
+
+      assert has_element?(
+               view,
+               "#shorten-for-user-form",
+               "is the short code of a link. Choose a different short code"
+             )
+
+      assert has_element?(view, "#link-usage-count", "0 of 10 links")
+      refute has_element?(view, "#short-url")
+    end
+  end
 end

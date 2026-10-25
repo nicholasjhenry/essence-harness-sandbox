@@ -27,4 +27,39 @@ defmodule Shortener.Shared.ShortCodeTest do
       refute ShortCode.valid?(nil)
     end
   end
+
+  describe "validating a chosen short code" do
+    defp validate(attrs) do
+      {%{}, %{short_code: :string}}
+      |> Ecto.Changeset.cast(attrs, [:short_code])
+      |> ShortCode.validate(:short_code)
+    end
+
+    test "gives the short code with no space at the start or the end given a valid short code" do
+      changeset = validate(%{"short_code" => "  Summer1 "})
+
+      assert changeset.valid?
+      assert Ecto.Changeset.get_change(changeset, :short_code) == "Summer1"
+    end
+
+    test "gives no change given an empty field or a field of spaces" do
+      for value <- ["", "   "] do
+        changeset = validate(%{"short_code" => value})
+
+        assert changeset.valid?
+        assert Ecto.Changeset.get_change(changeset, :short_code) == nil
+      end
+    end
+
+    test "gives the error given six characters, eight characters, a dash, or a letter that is not ASCII" do
+      for value <- ["Summer", "Summer12", "Sum-mer", "Café123"] do
+        assert %{short_code: ["must be seven characters from A–Z, a–z, and 0–9"]} =
+                 errors_on(validate(%{"short_code" => value}))
+      end
+    end
+  end
+
+  defp errors_on(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, _opts} -> message end)
+  end
 end

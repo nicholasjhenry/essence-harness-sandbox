@@ -6,7 +6,7 @@ The terms of the domain of the link shortener. Each definition is a genus and a 
 
 - **link shortener** — the software system of this repository. It makes a link for a target URL, and it knows each user and the plan of each user.
 - **target URL** — an absolute URL, with the `http` or the `https` scheme, that a person gives to the link shortener to shorten. It differs from a short URL, which the link shortener makes.
-- **short code** — an identifier of one link, made of letters and digits, that the link shortener makes. It differs from the link, which also holds a target URL.
+- **short code** — an identifier of one link, made of letters and digits. The link shortener makes it, or the person who shortens the target URL chooses it. It differs from the link, which also holds a target URL.
 - **short URL** — a URL of the link shortener whose path is the short code of one link. It differs from the target URL of the link, which is the URL that the link refers to.
 - **link** — a reference from one short code to one target URL, made by the link shortener when a person shortens the target URL. It differs from the short URL, which is how a person writes the link.
 - **user** — a person whom the link shortener knows by one email address. It differs from a visitor, whom the link shortener does not know.
@@ -29,3 +29,4 @@ The terms of the domain of the link shortener. Each definition is a genus and a 
 
 Authored by Nicholas Henry on Sat Oct 17 2026 at 10:08:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 10:55:34 PM EDT
+Changed by Nicholas Henry on Sat Oct 24 2026 at 7:57:58 PM EDT

@@ -36,6 +36,7 @@ The properties and the associations of each concept of the domain vocabulary, in
   - characters — seven letters or digits, from `A`–`Z`, `a`–`z`, and `0`–`9`.
 - **Associations:**
   - a short code identifies exactly one link.
+  - a short code is made by the link shortener, or is chosen by the person who shortens the target URL. The link does not record which.
 
 ### Target URL
 
@@ -152,7 +153,12 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **The default plan is Free.** A user with no plan assignment is on a plan, so that constraint 2 applies to each user.
 - **A change to a plan with a smaller link limit is permitted.** A user with 12 links can go from Pro to Free. Constraint 2 then stops each new link of the user, and keeps the 12 links that exist.
 - **The plans are fixed.** The request names no feature that adds or changes a plan. The two plans are a part of the link shortener, and not of its data.
-- **The short code is made by the link shortener.** The request names no custom short code. Seven characters from 62 give about 3.5 × 10¹² short codes.
+- **The short code is made by the link shortener, or chosen by the person.** In the first endeavor, the request named no chosen short code. The engineer requested the choice of the short code on Sat Oct 24 2026, and delegated the decisions of the walkthrough: "I'm delegating this endeavor complete to you". Seven characters from 62 give about 3.5 × 10¹² short codes.
+- **A chosen short code has the form of each short code: seven letters or digits.** The resolution and the router rest on this form. No path of a page has it, so a chosen short code never hides a page.
+- **A visitor and a user can each choose the short code.** The feature is a step of Shortening a target URL, for each person who shortens.
+- **A chosen short code that a link has makes no link.** The person chooses a different short code. The link shortener does not replace it with a short code that it makes, because the person asked for that short code. Hard constraint 1 applies to a chosen short code as to each short code.
+- **A short code is chosen with upper case and lower case as two different characters.** `Summer1` and `summer1` are two short codes, as for each short code that the link shortener makes.
+- **Alternative that the agent did not take: a chosen short code of 3 to 32 characters, with dashes.** It gives the person more freedom. A chosen short code such as `plans` or `log-in` would then be the path of a page, and the router would need a list of reserved paths.
 - **Alternative that the agent did not take: one link for each target URL.** Two shortenings of the same target URL give two links. One link for each target URL would make the link of one user the link of a different user, with a different owner.
 - **Source of the walkthrough of Parts 1 and 3, on Sat Oct 17 2026.** The engineer requested the resolution: "Resolve the target URL of a short URL: the redirect. Without it, a short URL leads to a 404." The engineer requested a login, for risk 4 of the architecture: "today anyone can assign any plan to any email address." The engineer then selected a login by magic link, a plan assignment by a user to that user only, and a login for the shortening for a user. The engineer delegated the other decisions: "you are fully delegated, no more prompts please".
 - **The resolution is a redirect with the status 302 Found.** A browser keeps a 301 redirect in its cache, and then does not ask the link shortener again.
@@ -167,3 +173,4 @@ The properties and the associations of each concept of the domain vocabulary, in
 
 Authored by Nicholas Henry on Sat Oct 17 2026 at 10:08:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 10:55:34 PM EDT
+Changed by Nicholas Henry on Sat Oct 24 2026 at 7:57:58 PM EDT

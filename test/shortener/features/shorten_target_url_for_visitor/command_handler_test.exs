@@ -60,6 +60,15 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.CommandHandlerTest do
                CommandHandler.handle(command(@url), ["AAAAAAA"], @now)
     end
 
+    test "returns short code taken and makes no link given a link has the one chosen candidate" do
+      {:ok, _} = CommandHandler.handle(command(@url), ["Summer1"], @now)
+
+      assert {:error, :short_code_taken} =
+               CommandHandler.handle(command(@url), ["Summer1"], @now)
+
+      assert [_] = link_events()
+    end
+
     test "tags the event with the short code only" do
       {:ok, _} = CommandHandler.handle(command(@url), ["aaaaaaa"], @now)
 
@@ -92,6 +101,27 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.CommandHandlerTest do
     test "is not valid given a URL with no host" do
       changeset = Command.changeset(%Command{}, %{"target_url" => "https:///path"})
       assert %{target_url: ["must be an http or https URL with a host"]} = errors_on(changeset)
+    end
+
+    test "is valid with the chosen short code given a short code of seven letters or digits" do
+      changeset =
+        Command.changeset(%Command{}, %{"target_url" => @url, "short_code" => " Summer1 "})
+
+      assert {:ok, %Command{short_code: "Summer1"}} =
+               Ecto.Changeset.apply_action(changeset, :insert)
+    end
+
+    test "is valid with no short code given an empty short code" do
+      changeset = Command.changeset(%Command{}, %{"target_url" => @url, "short_code" => ""})
+
+      assert {:ok, %Command{short_code: nil}} = Ecto.Changeset.apply_action(changeset, :insert)
+    end
+
+    test "is not valid given a short code that is not seven letters or digits" do
+      changeset = Command.changeset(%Command{}, %{"target_url" => @url, "short_code" => "abc"})
+
+      assert %{short_code: ["must be seven characters from A–Z, a–z, and 0–9"]} =
+               errors_on(changeset)
     end
 
     test "is not valid given no URL" do

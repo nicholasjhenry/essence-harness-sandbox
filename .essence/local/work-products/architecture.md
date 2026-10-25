@@ -46,7 +46,7 @@ The significant decisions about the organization of the link shortener. The desi
 3. **The event data is opaque to the event store.** Each event module encodes its data as JSON, and decodes it. The event store does not parse the data.
 4. **Each write is a command, decided on a decision model.** A command handler composes small, pure projections with `DCB.DecisionModel.build/2`. It decides, and appends with the append condition that `build/2` gives. On `{:error, :append_condition_failed}`, it reads, decides, and appends again, up to three times.
 5. **The code is organized in vertical slices.** Each feature is one slice under `lib/shortener/features/<verb_noun>/`, with `command.ex`, `command_handler.ex`, and `live.ex`. A slice that has no page has `controller.ex` in place of `live.ex`. A slice that reads and appends nothing has no command and no command handler. A module that a second slice needs moves to `lib/shortener/projections/`, for a projection, or to `lib/shortener/shared/`, for each other module, such as an event. The modules of the DCB event store are in `lib/shortener/dcb/`. Its SQLite implementation is `Shortener.EventStore`, in `lib/shortener/event_store.ex`.
-6. **Time and randomness enter a decision as data.** The LiveView sets `now` and makes three candidate short codes. The command handler takes both as arguments. No projection reads the clock.
+6. **Time and randomness enter a decision as data.** The LiveView sets `now` and makes three candidate short codes. Where the person chose a short code, the chosen short code is the one candidate. The command handler takes both as arguments. No projection reads the clock.
 7. **The plans are code.** `Shortener.Shared.Plan` holds the two plans of the domain model. A plan is not an event.
 8. **A tag holds no email address in clear.** The tag of a user is `user:` and the SHA-256 hash of the email address in lower case, with no space at the start or the end.
 9. **A page reads the events that it shows through the same projections.** The software system has no read model table, because no page lists more than the data of one user.
@@ -66,7 +66,7 @@ The significant decisions about the organization of the link shortener. The desi
 
 1. **SQLite has one writer at a time.** Each append waits for the append before it. The rate of writes of one user on one computer is far below that limit. One sequence of positions is also a limit of each DCB event store.
 2. **The append condition is code of this repository.** A fault in it breaks each hard constraint with no error. A test of two appends on the same decision model checks it.
-3. **Two short codes can be the same.** The probability is low. The decision takes the first of the three candidate short codes that no link has.
+3. **Two short codes can be the same.** The probability is low. The decision takes the first of the three candidate short codes that no link has. A chosen short code that a link has makes no link, and the person chooses again.
 4. **A login is only as safe as the mailbox of its user.** A person who reads the email of a user can log in as that user for 15 minutes.
 5. **The hash of an email address can be guessed.** A person who knows an email address can compute its tag. The tag is not given outside the event store.
 6. **The session cookie is signed, and not encrypted.** A person who copies the cookie can act as the user until the logout. This is the same risk as the session of `phx.gen.auth`.
@@ -80,3 +80,4 @@ The significant decisions about the organization of the link shortener. The desi
 Authored by Nicholas Henry on Sat Oct 17 2026 at 10:10:14 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 10:15:26 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 10:57:10 PM EDT
+Changed by Nicholas Henry on Sat Oct 24 2026 at 7:58:24 PM EDT

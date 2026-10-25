@@ -113,6 +113,16 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.CommandHandlerTest do
                CommandHandler.handle(login_scope("ada@example.com"), command(), ["aaaaaaa"], @now)
     end
 
+    test "returns link limit reached given a user at the link limit chooses a short code that a link has" do
+      {:ok, _} =
+        CommandHandler.handle(login_scope("grace@example.com"), command(), ["Summer1"], @now)
+
+      shorten_links("ada@example.com", 10)
+
+      assert {:error, :link_limit_reached} =
+               CommandHandler.handle(login_scope("ada@example.com"), command(), ["Summer1"], @now)
+    end
+
     test "fails the append given a link of the same user after the read" do
       projections = [
         user_link_count:

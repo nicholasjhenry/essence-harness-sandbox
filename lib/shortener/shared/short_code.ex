@@ -1,8 +1,11 @@
 defmodule Shortener.Shared.ShortCode do
   @moduledoc """
   The identifier of one link: seven characters from `A`–`Z`, `a`–`z`, and
-  `0`–`9`, which the link shortener makes.
+  `0`–`9`. The link shortener makes it, or the person who shortens the
+  target URL chooses it.
   """
+
+  import Ecto.Changeset
 
   @alphabet ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
   @length 7
@@ -31,6 +34,29 @@ defmodule Shortener.Shared.ShortCode do
     do: byte_size(value) == @length and value |> to_charlist() |> Enum.all?(&(&1 in @alphabet))
 
   def valid?(_value), do: false
+
+  @doc """
+  Validates the optional field of a chosen short code. Each space at the
+  start and the end is removed. A field that is then empty is no change.
+  """
+  @spec validate(Ecto.Changeset.t(), atom()) :: Ecto.Changeset.t()
+  def validate(changeset, field) do
+    changeset
+    |> update_change(field, &String.trim/1)
+    |> drop_empty_change(field)
+    |> validate_change(field, fn ^field, short_code ->
+      if valid?(short_code),
+        do: [],
+        else: [{field, "must be seven characters from A–Z, a–z, and 0–9"}]
+    end)
+  end
+
+  defp drop_empty_change(changeset, field) do
+    case get_change(changeset, field) do
+      "" -> delete_change(changeset, field)
+      _short_code -> changeset
+    end
+  end
 
   @spec tag(String.t()) :: String.t()
   def tag(short_code), do: "short_code:" <> short_code
