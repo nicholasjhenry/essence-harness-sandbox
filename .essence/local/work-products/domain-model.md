@@ -14,6 +14,7 @@ The properties and the associations of each concept of the domain vocabulary, in
   - a link has zero or one owner, who is a user.
   - a link is written as exactly one short URL.
   - a link has zero or one deletion. A link that has a deletion no longer exists.
+  - a link has zero or more resolutions, through its short URL.
 
 ### Short URL
 
@@ -27,9 +28,11 @@ The properties and the associations of each concept of the domain vocabulary, in
 
 - **Properties:**
   - status — `302 Found` with the target URL, if a link has the short code. `404 Not Found`, if no link has it.
+  - time of resolution — exactly one.
+  - target URL — exactly one, if the status is `302 Found`. The target URL to which the link shortener sent the person.
 - **Associations:**
   - a resolution resolves exactly one short URL.
-  - the link shortener records no resolution.
+  - the link shortener records each resolution with the status `302 Found`. It records no resolution with the status `404 Not Found`.
 
 ### Short code
 
@@ -173,7 +176,7 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **Alternative that the agent did not take: one link for each target URL.** Two shortenings of the same target URL give two links. One link for each target URL would make the link of one user the link of a different user, with a different owner.
 - **Source of the walkthrough of Parts 1 and 3, on Sat Oct 17 2026.** The engineer requested the resolution: "Resolve the target URL of a short URL: the redirect. Without it, a short URL leads to a 404." The engineer requested a login, for risk 4 of the architecture: "today anyone can assign any plan to any email address." The engineer then selected a login by magic link, a plan assignment by a user to that user only, and a login for the shortening for a user. The engineer delegated the other decisions: "you are fully delegated, no more prompts please".
 - **The resolution is a redirect with the status 302 Found.** A browser keeps a 301 redirect in its cache, and then does not ask the link shortener again.
-- **The link shortener records no resolution.** The request names no count of the uses of a link. A record of each resolution would add a write to each read.
+- **The link shortener records no resolution.** The request names no count of the uses of a link. A record of each resolution would add a write to each read. The count of the resolutions of a link replaced this decision on Sun Oct 25 2026. The notes of that walkthrough follow the notes of the deletion.
 - **A login needs no registration.** A user exists from the first link, the first plan assignment, or the first login token for the email address, as in Part 2.
 - **The login link starts no login session by itself.** It opens a page with one button, and the button starts the login session. A mail scanner that opens each link in an email then does not log in.
 - **The lifetime of a login token is 15 minutes.** It is the lifetime that `phx.gen.auth` gives a magic link.
@@ -193,6 +196,16 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **The user deletes a link from the list of the links of the user, and confirms the deletion first.** The list is the one place that shows each link of the user.
 - **Alternative that the agent did not take: a short code of a deleted link that a new link can take.** It gives more short codes. A short URL that a person saved would then send that person to the target URL of a different person.
 - **Alternative that the agent did not take: a deletion that hides the link and keeps its resolution.** The user who deletes a link expects that its short URL stops.
+- **Source of the walkthrough of the count of the resolutions of a link, on Sun Oct 25 2026.** The engineer requested "implement: Count the resolutions of a link", and delegated the decisions of the walkthrough: "completely delegated". The count uses the concepts resolution, link, short URL, owner, and user of Parts 1 and 2. It adds the properties time of resolution and target URL to a resolution, and the association of a link with its resolutions.
+- **The link shortener records each resolution that finds a link.** Each resolution adds one write to the read of the link. Risk 1 of the architecture covers the rate of writes on one computer.
+- **A resolution with the status `404 Not Found` is not recorded.** Any person can request any path. A record of each such request would let a person add events to the event store with no link.
+- **The resolution of a link of a visitor is recorded, as the resolution of a link of a user is.** A resolution is the same event for each link. No page shows the count of a link of a visitor, because no list holds a link of a visitor.
+- **Each resolution counts, with no difference between two persons.** A resolution by the owner, by a second person, or by a program counts as one resolution. The link shortener does not know the person who resolves a short URL.
+- **The list of the links of a user shows the number of resolutions of each link.** The list is the one place that shows each link of the user.
+- **A resolution records the target URL to which it sent the person.** The feature Change the target URL of a link is in the backlog. A record of the target URL then still says where each resolution went.
+- **A deletion keeps the resolutions of the link.** A resolution is a fact of the past. The list does not show a deleted link, so it shows no count of a deleted link.
+- **The page of the links of a user reads each resolution of the links of the user.** The read grows with each resolution, and holds the resolutions of deleted links too. One user on one computer is far below the limit of SQLite, as for the list itself.
+- **Alternative that the agent did not take: a count of the resolutions in a table of its own.** Decision 9 of the architecture gives the software system no read model table. The page reads the resolutions of the links of one user through a projection.
 
 ---
 
@@ -201,3 +214,4 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 10:55:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 7:57:58 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:26:28 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:55:25 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 11:29:32 AM EDT
