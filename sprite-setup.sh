@@ -4,8 +4,8 @@
 # sprite, from the root of a clone that has its submodules.
 #
 # The script sets the git identity, installs the dependencies of the app, and
-# creates the service of the dev server. It does not log GitHub in, and it
-# does not clone the repository. Each step can run again with no harm.
+# creates the service of the dev server. It does not log GitHub in, which
+# ./sprite-auth.sh does, and it does not clone the repository. Each step can run again with no harm.
 #
 # Usage: ./sprite-setup.sh --name <name> --email <email>
 #
