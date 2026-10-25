@@ -11,8 +11,8 @@
 | domain walkthrough | 2026-10-25 |
 | design | 2026-10-25 |
 | design inspection | 2026-10-25 |
-| code | |
-| code inspection | |
+| code | 2026-10-25 |
+| code inspection | 2026-10-25 |
 | integration | |
 
 ## Request
@@ -88,6 +88,16 @@ An agent in a session other than the session of the author inspected the design,
 5. The tests take the given convention, `check/1` has a spec, and function clauses select its cases.
 6. The test of a short code that a link took after the check makes the link with the command handler of the visitor.
 7. The user page has two tests. The code of the two pages is the same.
+
+### Code inspection
+
+An agent in a session other than the session of the author inspected the code, and accepted it. It applied the elixir-core, elixir-testing, and testing-names-given skills. `mix test` gave 244 tests with no failure in the sprite `check-the-availability-of-a-short-code`, `mix format --check-formatted` passed, and `mix compile --warnings-as-errors --force` passed. It found no blocking defect. The code does not take its findings:
+
+1. The describe block of the user page names the page of the links of a user. The design gives no name for it, and the name is a gerund phrase.
+2. `assign_availability/2` is the same in the two LiveViews. Each slice keeps its own private functions of the page, as `assign_form/3` and `show_conflict/4` are the same in both.
+3. The test module of `ShortCodeAvailability` is not async, as each test module that appends events.
+4. A change of the target URL reads the events again. The design states it.
+5. `test/shortener/features/send_login_link_to_user/live_test.exs` holds an unused `require Logger`. The file is outside this feature.
 
 ---
 

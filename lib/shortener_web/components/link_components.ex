@@ -41,12 +41,14 @@ defmodule ShortenerWeb.LinkComponents do
   end
 
   attr :field, Phoenix.HTML.FormField, required: true
+  attr :availability, :atom, default: nil, values: [:available, :taken, nil]
 
   @doc """
   Shows the optional short code field of a form that makes a link. The field
   accepts no character after the length of a short code. The count reads the
   params of the form, because the value of the field is the change, with the
-  spaces at the start and the end removed.
+  spaces at the start and the end removed. The availability says whether a
+  link has the short code, or is empty.
   """
   def short_code_input(assigns) do
     typed = assigns.field.form.params[Atom.to_string(assigns.field.field)] || ""
@@ -70,6 +72,18 @@ defmodule ShortenerWeb.LinkComponents do
       </p>
       <p id="short-code-count" aria-live="polite" class="shrink-0 tabular-nums">{@count}/{@limit}</p>
     </div>
+    <p
+      id="short-code-availability"
+      aria-live="polite"
+      class={[
+        "text-sm",
+        @availability && "-mt-2 mb-3",
+        @availability == :available && "text-success",
+        @availability == :taken && "text-error"
+      ]}
+    >
+      {availability_text(@availability)}
+    </p>
     """
   end
 
@@ -80,4 +94,8 @@ defmodule ShortenerWeb.LinkComponents do
   @spec short_url_of(LinkShortened.t()) :: String.t()
   def short_url_of(%LinkShortened{short_code: short_code}),
     do: ShortenerWeb.Endpoint.url() <> "/" <> short_code
+
+  defp availability_text(:available), do: "No link has this short code."
+  defp availability_text(:taken), do: "A link has this short code. Choose a different short code."
+  defp availability_text(nil), do: nil
 end

@@ -116,4 +116,41 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.LiveTest do
       assert has_element?(view, "#short-code-count", "3/7")
     end
   end
+
+  describe "checking the availability of the short code on the page of the links of a user" do
+    test "shows that a link has the short code given the short code of a link of a visitor",
+         %{conn: conn} do
+      {:ok, visitor_view, _html} = live(conn, ~p"/")
+
+      visitor_view
+      |> form("#shorten-form",
+        command: %{target_url: "https://example.com", short_code: "Summer1"}
+      )
+      |> render_submit()
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
+
+      change_short_code(view, "Summer1")
+
+      assert has_element?(
+               view,
+               "#short-code-availability",
+               "A link has this short code. Choose a different short code."
+             )
+    end
+
+    test "shows that no link has the short code given a free short code", %{conn: conn} do
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
+
+      change_short_code(view, "Summer1")
+
+      assert has_element?(view, "#short-code-availability", "No link has this short code.")
+    end
+  end
+
+  defp change_short_code(view, short_code) do
+    view
+    |> form("#shorten-for-user-form", command: %{short_code: short_code})
+    |> render_change()
+  end
 end
