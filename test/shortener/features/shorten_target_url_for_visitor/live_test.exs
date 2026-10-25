@@ -40,7 +40,7 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.LiveTest do
       assert view |> element("#short-url") |> render() =~ ~r"http://localhost:\d+/Summer1<"
     end
 
-    test "resolves the short URL of the chosen short code to the target URL", %{conn: conn} do
+    test "redirects the short URL to the target URL given a chosen short code", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/")
       submit(view, %{target_url: @url, short_code: "Summer1"})
 

@@ -16,7 +16,15 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.Command do
     field :short_code, :string
   end
 
-  @type t :: %__MODULE__{target_url: String.t(), short_code: String.t() | nil}
+  @typedoc """
+  ## Fields
+
+  A command has these fields:
+
+  - target_url: the target URL to shorten
+  - short_code: the short code that the visitor chose, or nil
+  """
+  @type t :: %__MODULE__{target_url: String.t() | nil, short_code: String.t() | nil}
 
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(command, attrs) do

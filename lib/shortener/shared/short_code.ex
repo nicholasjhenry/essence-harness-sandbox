@@ -30,8 +30,7 @@ defmodule Shortener.Shared.ShortCode do
 
   @doc "True if the value has the form of a short code."
   @spec valid?(term()) :: boolean()
-  def valid?(value) when is_binary(value),
-    do: byte_size(value) == @length and value |> to_charlist() |> Enum.all?(&(&1 in @alphabet))
+  def valid?(value) when is_binary(value), do: value =~ format()
 
   def valid?(_value), do: false
 
@@ -44,12 +43,15 @@ defmodule Shortener.Shared.ShortCode do
     changeset
     |> update_change(field, &String.trim/1)
     |> drop_empty_change(field)
-    |> validate_change(field, fn ^field, short_code ->
-      if valid?(short_code),
-        do: [],
-        else: [{field, "must be seven characters from A–Z, a–z, and 0–9"}]
-    end)
+    |> validate_format(field, format(),
+      message: "must be seven characters from A–Z, a–z, and 0–9"
+    )
   end
+
+  # The form of a short code: seven characters of the alphabet. The regex is
+  # built in a function, because Elixir deprecates a regex in a module
+  # attribute on Erlang/OTP 28.
+  defp format, do: ~r/\A[A-Za-z0-9]{#{@length}}\z/
 
   defp drop_empty_change(changeset, field) do
     case get_change(changeset, field) do

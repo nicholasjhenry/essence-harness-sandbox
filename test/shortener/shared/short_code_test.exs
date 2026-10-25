@@ -1,6 +1,8 @@
 defmodule Shortener.Shared.ShortCodeTest do
   use ExUnit.Case, async: true
 
+  import Shortener.DataCase, only: [errors_on: 1]
+
   alias Shortener.Shared.ShortCode
 
   describe "generating a short code" do
@@ -57,9 +59,5 @@ defmodule Shortener.Shared.ShortCodeTest do
                  errors_on(validate(%{"short_code" => value}))
       end
     end
-  end
-
-  defp errors_on(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {message, _opts} -> message end)
   end
 end
