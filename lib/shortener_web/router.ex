@@ -40,6 +40,7 @@ defmodule ShortenerWeb.Router do
       on_mount: [{ShortenerWeb.UserAuth, :require_authenticated}] do
       live "/user-links", ShortenTargetUrlForUser.Live
       live "/plans", AssignPlanToUser.Live
+      live "/links", ListLinksOfUser.Live
     end
   end
 

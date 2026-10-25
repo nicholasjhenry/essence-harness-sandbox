@@ -46,6 +46,7 @@ defmodule ShortenerWeb.Layouts do
           <li><.link navigate={~p"/"} class="btn btn-ghost btn-sm">Shorten</.link></li>
           <%= if @current_scope do %>
             <li><.link navigate={~p"/user-links"} class="btn btn-ghost btn-sm">Your links</.link></li>
+            <li><.link navigate={~p"/links"} class="btn btn-ghost btn-sm">All your links</.link></li>
             <li><.link navigate={~p"/plans"} class="btn btn-ghost btn-sm">Your plan</.link></li>
             <li id="current-user" class="text-sm opacity-70">{@current_scope.user.email_address}</li>
             <li>

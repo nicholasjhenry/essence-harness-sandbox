@@ -168,9 +168,15 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **The lifetime of a login token is 15 minutes.** It is the lifetime that `phx.gen.auth` gives a magic link.
 - **A user assigns a plan only to that user.** The engineer selected this. No administrator exists. With no payment, a user can select the Pro plan.
 - **Alternative that the engineer did not take: an email address and a password.** It does not prove that the person owns the email address.
+- **Source of the walkthrough of the listing of the links of a user, on Sat Oct 24 2026.** The engineer requested "implement "List the links of a user" only", and delegated the decisions of the walkthrough: "delegating this to you fully". The listing uses the concepts link, owner, short URL, target URL, and user of Parts 1 and 2. It adds no concept, no property, and no association.
+- **A user sees only the links that the user owns.** The owner is the user of the login session, and never a value of a form or a URL. A link of a visitor has no owner, so no user sees it in a list.
+- **The list shows the short URL, the target URL, and the time of shortening of each link, the newest link first.** These are the properties of a link that the domain model records.
+- **The list holds each link of the user, with no pages.** A user on the Free plan has at most 10 links. A user on the Pro plan can have more, and one list on one computer is far below the limit of SQLite.
+- **Alternative that the agent did not take: the list on the page that shortens a target URL.** That page belongs to the feature Shorten the target URL for a user. A page of its own keeps each feature in its own slice.
 
 ---
 
 Authored by Nicholas Henry on Sat Oct 17 2026 at 10:08:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 10:55:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 7:57:58 PM EDT
+Changed by Nicholas Henry on Sat Oct 24 2026 at 9:26:28 PM EDT
