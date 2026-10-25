@@ -4,7 +4,8 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandlerTest do
   alias Shortener.DCB.{DecisionModel, Query, QueryItem}
   alias Shortener.EventStore
   alias Shortener.Features.DeleteLinkOfUser.LinkOwner
-  alias Shortener.Features.ResolveTargetUrlOfShortUrl.{CommandHandler, ResolvedLink}
+  alias Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler
+  alias Shortener.Projections.LinkOfShortCode
   alias Shortener.Shared.{EmailAddress, LinkDeleted, LinkShortened, ShortCode, ShortUrlResolved}
 
   @now ~U[2026-10-25 12:00:00.000000Z]
@@ -163,7 +164,7 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandlerTest do
   describe "deciding a resolution under a conflicting event" do
     test "fails the append given a deletion of the same link after the read" do
       shorten("Abc1234", "https://example.com/Abc1234", "ada@example.com")
-      {_model, condition} = DecisionModel.build(EventStore, link: ResolvedLink.new("Abc1234"))
+      {_model, condition} = DecisionModel.build(EventStore, link: LinkOfShortCode.new("Abc1234"))
 
       delete("Abc1234", "ada@example.com")
 
@@ -173,7 +174,7 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandlerTest do
 
     test "keeps the append given a resolution of the same link after the read" do
       shorten("Abc1234", "https://example.com/Abc1234", "ada@example.com")
-      {_model, condition} = DecisionModel.build(EventStore, link: ResolvedLink.new("Abc1234"))
+      {_model, condition} = DecisionModel.build(EventStore, link: LinkOfShortCode.new("Abc1234"))
 
       {:ok, _resolved} = CommandHandler.handle("Abc1234", @now)
 

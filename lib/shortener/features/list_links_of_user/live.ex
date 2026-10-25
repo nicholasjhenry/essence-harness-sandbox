@@ -1,21 +1,25 @@
 defmodule Shortener.Features.ListLinksOfUser.Live do
   @moduledoc """
   The page on which a logged-in user sees each link that the user owns, the
-  newest first, with the number of its resolutions. The owner is the user
-  of the login session.
+  newest first, with the number of its resolutions and its time of
+  expiration. The owner is the user of the login session.
 
   The page subscribes to the resolutions of the links of the user. On each
   resolution, it reads the list again, so that the count changes with no
   reload. A short URL opens in a new browser tab, so that the page stays
   open.
+
+  The page compares each time of expiration with the time of the last read.
+  A time of expiration that passes while the page is open shows as past
+  after the next read.
   """
 
   use ShortenerWeb, :live_view
 
-  import ShortenerWeb.LinkComponents, only: [short_url_of: 1]
+  import ShortenerWeb.LinkComponents, only: [short_url_of: 1, time_text: 1]
 
   alias Shortener.Features.ListLinksOfUser.LinkList
-  alias Shortener.Shared.ShortUrlResolved
+  alias Shortener.Shared.{Expiration, ShortUrlResolved}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -31,6 +35,7 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
     {:ok,
      socket
      |> assign(:page_title, "All your links")
+     |> assign(:now, DateTime.utc_now())
      |> assign(:links_empty?, links == [])
      |> stream(:links, links, dom_id: &"link-#{&1.link.short_code}")}
   end
@@ -41,6 +46,7 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
 
     {:noreply,
      socket
+     |> assign(:now, DateTime.utc_now())
      |> assign(:links_empty?, links == [])
      |> stream(:links, links, reset: true)}
   end
@@ -74,11 +80,25 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
           <span class="break-all">{link.target_url}</span>
         </:col>
         <:col :let={{_id, %{link: link}}} label="Shortened">
-          {shortened_text(link.shortened_at)}
+          {time_text(link.shortened_at)}
         </:col>
         <:col :let={{_id, listed}} label="Resolutions">
           <span id={"resolutions-#{listed.link.short_code}"}>{listed.resolution_count}</span>
         </:col>
+        <:col :let={{_id, listed}} label="Expires">
+          <span id={"expires-#{listed.link.short_code}"}>
+            {expires_text(listed.expires_at, @now)}
+          </span>
+        </:col>
+        <:action :let={{_id, listed}}>
+          <.link
+            :if={!Expiration.passed?(listed.expires_at, @now)}
+            id={"expire-#{listed.link.short_code}"}
+            navigate={~p"/links/#{listed.link.short_code}/expiration"}
+          >
+            Expire
+          </.link>
+        </:action>
         <:action :let={{_id, %{link: link}}}>
           <.link
             id={"delete-#{link.short_code}"}
@@ -94,5 +114,11 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
     """
   end
 
-  defp shortened_text(shortened_at), do: Calendar.strftime(shortened_at, "%Y-%m-%d %H:%M UTC")
+  defp expires_text(nil, _now), do: "Never"
+
+  defp expires_text(expires_at, now) do
+    if Expiration.passed?(expires_at, now),
+      do: "Expired #{time_text(expires_at)}",
+      else: time_text(expires_at)
+  end
 end

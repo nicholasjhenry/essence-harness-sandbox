@@ -3,13 +3,14 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler do
   Resolves the short URL of a short code: records one resolution of the
   link, and gives the target URL to send the person to.
 
-  A short code of no link or of a deleted link gives `{:error, :not_found}`,
-  and records nothing. A value that does not have the form of a short code
-  is not read.
+  A short code of no link, of a deleted link, or of a link whose time of
+  expiration is past gives `{:error, :not_found}`, and records nothing. A
+  value that does not have the form of a short code is not read.
 
-  The decision reads only the link of the short code. A deletion of the link
-  between the read and the append fails the append, and the decision runs
-  again. A second resolution of the same short URL does not fail it.
+  The decision reads only the link of the short code. A deletion or an
+  expiration of the link between the read and the append fails the append,
+  and the decision runs again. A second resolution of the same short URL
+  does not fail it.
 
   After the append, the resolution of a link of an owner is broadcast on the
   topic of the owner. A link of a visitor has no owner, and its resolution
@@ -17,8 +18,8 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler do
   """
 
   alias Shortener.DCB.Decider
-  alias Shortener.Features.ResolveTargetUrlOfShortUrl.ResolvedLink
-  alias Shortener.Shared.{ShortCode, ShortUrlResolved}
+  alias Shortener.Projections.LinkOfShortCode
+  alias Shortener.Shared.{Expiration, ShortCode, ShortUrlResolved}
 
   @spec handle(String.t(), DateTime.t()) ::
           {:ok, ShortUrlResolved.t()} | {:error, :not_found | :append_condition_failed}
@@ -32,7 +33,7 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler do
     with {:ok, [event]} <-
            Decider.run(
              Shortener.EventStore,
-             [link: ResolvedLink.new(short_code)],
+             [link: LinkOfShortCode.new(short_code)],
              &decide(now, &1)
            ) do
       resolved = ShortUrlResolved.from_event(event)
@@ -53,7 +54,13 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler do
 
   defp decide(_now, %{link: nil}), do: {:error, :not_found}
 
-  defp decide(now, %{link: link}) do
+  defp decide(now, %{link: %LinkOfShortCode{link: link, expires_at: expires_at}}) do
+    if Expiration.passed?(expires_at, now),
+      do: {:error, :not_found},
+      else: {:ok, [resolution(link, now)]}
+  end
+
+  defp resolution(link, now) do
     fact = %ShortUrlResolved{
       short_code: link.short_code,
       target_url: link.target_url,
@@ -61,6 +68,6 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler do
       resolved_at: now
     }
 
-    {:ok, [ShortUrlResolved.to_event(fact)]}
+    ShortUrlResolved.to_event(fact)
   end
 end

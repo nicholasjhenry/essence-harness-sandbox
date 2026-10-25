@@ -73,6 +73,10 @@ defmodule ShortenerWeb.LinkComponents do
     """
   end
 
+  @doc "Gives a time as `2026-10-24 21:26 UTC`."
+  @spec time_text(DateTime.t()) :: String.t()
+  def time_text(%DateTime{} = time), do: Calendar.strftime(time, "%Y-%m-%d %H:%M UTC")
+
   @spec short_url_of(LinkShortened.t()) :: String.t()
   def short_url_of(%LinkShortened{short_code: short_code}),
     do: ShortenerWeb.Endpoint.url() <> "/" <> short_code

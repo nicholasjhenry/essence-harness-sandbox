@@ -2,7 +2,7 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.ControllerTest do
   use ShortenerWeb.ConnCase, async: false
 
   alias Shortener.DCB.{Query, QueryItem}
-  alias Shortener.Shared.{LinkShortened, ShortUrlResolved}
+  alias Shortener.Shared.{LinkExpirationSet, LinkShortened, ShortUrlResolved}
 
   setup do
     fact = %LinkShortened{
@@ -43,6 +43,22 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.ControllerTest do
     test "records no resolution given a short code that no link has", %{conn: conn} do
       get(conn, "/Zzz9999")
 
+      assert resolutions() == []
+    end
+
+    test "answers not found and records no resolution given a link whose time of expiration is past",
+         %{conn: conn} do
+      fact = %LinkExpirationSet{
+        short_code: "Abc1234",
+        owner_email_address: "ada@example.com",
+        expires_at: DateTime.add(DateTime.utc_now(), -60, :second),
+        set_at: DateTime.add(DateTime.utc_now(), -120, :second)
+      }
+
+      :ok = Shortener.EventStore.append(LinkExpirationSet.to_event(fact), nil)
+      conn = get(conn, "/Abc1234")
+
+      assert html_response(conn, 404) =~ "Not Found"
       assert resolutions() == []
     end
 

@@ -4,7 +4,7 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
   import Phoenix.LiveViewTest
 
   alias Shortener.Features.ResolveTargetUrlOfShortUrl
-  alias Shortener.Shared.LinkShortened
+  alias Shortener.Shared.{LinkExpirationSet, LinkShortened}
 
   defp shorten(short_code, owner, shortened_at \\ ~U[2026-10-24 21:26:00Z]) do
     fact = %LinkShortened{
@@ -15,6 +15,17 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
     }
 
     :ok = Shortener.EventStore.append(LinkShortened.to_event(fact), nil)
+  end
+
+  defp expire(short_code, owner, expires_at) do
+    fact = %LinkExpirationSet{
+      short_code: short_code,
+      owner_email_address: owner,
+      expires_at: expires_at,
+      set_at: DateTime.add(expires_at, -3600, :second)
+    }
+
+    :ok = Shortener.EventStore.append(LinkExpirationSet.to_event(fact), nil)
   end
 
   defp row_ids(html) do
@@ -160,6 +171,44 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
         ResolveTargetUrlOfShortUrl.CommandHandler.handle("Abc1234", DateTime.utc_now())
 
       assert view |> element("#resolutions-Abc1234") |> render() =~ ">1<"
+    end
+  end
+
+  describe "showing the time of expiration of each link on the page of all the links" do
+    test "shows never and offers the expiration given a link with no expiration", %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      assert has_element?(view, "th", "Expires")
+      assert view |> element("#expires-Abc1234") |> render() =~ "Never"
+
+      assert view |> element("#expire-Abc1234") |> render() =~
+               ~s(href="/links/Abc1234/expiration")
+    end
+
+    test "shows the time and offers the expiration given a later time of expiration",
+         %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+      expire("Abc1234", "ada@example.com", ~U[2099-01-02 03:04:00Z])
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      assert view |> element("#expires-Abc1234") |> render() =~ "2099-01-02 03:04 UTC"
+      refute view |> element("#expires-Abc1234") |> render() =~ "Expired"
+      assert has_element?(view, "#expire-Abc1234")
+    end
+
+    test "shows expired and does not offer the expiration given a time of expiration that is past",
+         %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+      expire("Abc1234", "ada@example.com", ~U[2026-10-24 22:00:00Z])
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      assert view |> element("#expires-Abc1234") |> render() =~ "Expired 2026-10-24 22:00 UTC"
+      refute has_element?(view, "#expire-Abc1234")
+      assert has_element?(view, "#delete-Abc1234")
     end
   end
 end

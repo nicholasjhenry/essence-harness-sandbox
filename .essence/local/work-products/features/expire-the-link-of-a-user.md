@@ -11,8 +11,8 @@
 | domain walkthrough | 2026-10-25 |
 | design | 2026-10-25 |
 | design inspection | 2026-10-25 |
-| code | |
-| code inspection | |
+| code | 2026-10-25 |
+| code inspection | 2026-10-25 |
 | integration | |
 
 
@@ -100,6 +100,18 @@ An agent in a session other than the session of the author inspected the design,
 5. The read of the page is the module `OwnedLink`, as `PlanOfUser` and `LinkList` are, and it checks the form of the short code.
 6. The list can show a time of expiration that passed while the page was open. The design states the limit. The page of the expiration and the decision refuse the expiration.
 7. The outcome `:append_condition_failed` of the page has no test of the page. The decider retries three times, so a test of the page cannot make it occur. The flash follows the pattern of the page of the plan.
+
+
+### Code inspection
+
+An agent in a session other than the session of the author inspected the code, and accepted it. It applied the elixir-core, elixir-testing, and testing-names-given skills. `mix test` gave 228 tests with no failure in the sprite `expire-the-link-of-a-user`, `mix format --check-formatted` passed, and `mix compile --warnings-as-errors --force` passed. It found no blocking defect. The code takes findings 1 to 5, and `mix test` then gave 228 tests with no failure again. It does not take finding 6:
+
+1. The test of a visitor on the page of the expiration states its condition after "given".
+2. The two messages of the page are private functions, and not module attributes, because no pattern or guard uses them.
+3. The type of `Command` permits `nil` for `expires_at`, because `%Command{}` starts with `nil`.
+4. The moduledoc of the command handler of the resolution wraps its lines as the rest of the file does.
+5. The test of the resolution at the time of expiration also checks that no resolution is appended.
+6. The page cannot get `:not_after_now` from the decision, because the changeset and the decision get the same `now`. The branch stays, by finding 1 of the design inspection.
 
 ---
 
