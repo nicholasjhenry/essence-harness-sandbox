@@ -1,4 +1,4 @@
-[submodule ".essence/harness"]
-	path = .essence/harness
+[submodule ".vendor/essence-harness"]
+	path = .vendor/essence-harness
 	url = https://github.com/nicholasjhenry/essence-harness
 	branch = develop
