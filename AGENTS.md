@@ -72,8 +72,9 @@ A sprite holds the code of an endeavor while the code is written and tested, apa
 The setup script is in the repository, so it runs after the clone. The submodules are private, so the login comes before the clone. The script does each step that needs no secret:
 
 1. It sets the git identity. Each commit uses it, and each provenance footer uses `git config user.name`.
-2. It runs `mix setup`, which gets the dependencies, makes the database, and builds the assets.
-3. It creates the service `shortener`, which runs the dev server on port 8080. The proxy of the sprite routes the URL of the sprite to that port. The service sets `PHX_HOST` to the host of the URL of the sprite. Each URL that the app makes, such as a short URL or a login link, is then a URL of the sprite, and not of `localhost`.
+2. It adds an import of `.vendor/agents-playbook/src/system/AGENTS.md` to `~/.claude/CLAUDE.md`. A Claude Code session in the sprite then applies the system rules of the playbook, as a session on the computer of the engineer does. The repository loads only this file, and the links in `.claude/skills/` give only the skills of the playbook.
+3. It runs `mix setup`, which gets the dependencies, makes the database, and builds the assets.
+4. It creates the service `shortener`, which runs the dev server on port 8080. The proxy of the sprite routes the URL of the sprite to that port. The service sets `PHX_HOST` to the host of the URL of the sprite. Each URL that the app makes, such as a short URL or a login link, is then a URL of the sprite, and not of `localhost`.
 
 Each step of the script can run again with no harm. The engineer approves the login, because the token is a secret of the engineer. The agent runs the login script, and the approval of 1Password stops it until the engineer acts. The login script reads the token from 1Password, and pipes it to the sprite. The token is then in no argument of a command, in no local file, and in no tool call of the agent. The GitHub connector of the sprites does not replace the login. It gives the REST API of GitHub, and not `git clone` or `git push`.
 
@@ -89,3 +90,4 @@ Changed by Nicholas Henry on Sun Oct 25 2026 at 10:13:53 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 10:49:58 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 10:54:53 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:55:49 AM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 1:07:39 PM EDT

@@ -3,7 +3,8 @@
 # Sets up a sprite for the development of the link shortener. Run it in the
 # sprite, from the root of a clone that has its submodules.
 #
-# The script sets the git identity, installs the dependencies of the app, and
+# The script sets the git identity, makes Claude Code import the system
+# instructions of the playbook, installs the dependencies of the app, and
 # creates the service of the dev server. It does not log GitHub in, which
 # ./sprite-auth.sh does, and it does not clone the repository. Each step can run again with no harm.
 #
@@ -60,6 +61,19 @@ done
 git config --global user.name "$name"
 git config --global user.email "$email"
 echo "sprite-setup: the git identity is $name <$email>."
+
+# A3. The system instructions of the playbook, for each Claude Code session in
+# the sprite. The repository loads only AGENTS.md, so ~/.claude/CLAUDE.md
+# imports the AGENTS.md of the playbook, which reads the rules beside it.
+
+playbook_instructions="$project_root/.vendor/agents-playbook/src/system/AGENTS.md"
+[ -f "$playbook_instructions" ] || fail "$playbook_instructions is not found. Run: git submodule update --init --recursive"
+
+claude_md="$HOME/.claude/CLAUDE.md"
+mkdir -p "$(dirname "$claude_md")"
+touch "$claude_md"
+grep -qxF "@$playbook_instructions" "$claude_md" || echo "@$playbook_instructions" >> "$claude_md"
+echo "sprite-setup: $claude_md imports $playbook_instructions."
 
 # A4. The dependencies of the app, its database, and its assets.
 
