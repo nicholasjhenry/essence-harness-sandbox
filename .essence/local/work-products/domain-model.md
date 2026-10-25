@@ -10,11 +10,13 @@ The properties and the associations of each concept of the domain vocabulary, in
   - short code — exactly one. No two links have the same short code.
   - target URL — exactly one.
   - time of shortening — exactly one. The time at which the link shortener made the link.
+  - time of expiration — zero or one. The time of expiration of the latest expiration of the link.
 - **Associations:**
   - a link has zero or one owner, who is a user.
   - a link is written as exactly one short URL.
   - a link has zero or one deletion. A link that has a deletion no longer exists.
   - a link has zero or more resolutions, through its short URL.
+  - a link has zero or more expirations. The latest one gives the time of expiration of the link.
 
 ### Short URL
 
@@ -27,7 +29,7 @@ The properties and the associations of each concept of the domain vocabulary, in
 ### Resolution
 
 - **Properties:**
-  - status — `302 Found` with the target URL, if a link has the short code. `404 Not Found`, if no link has it.
+  - status — `302 Found` with the target URL, if a link has the short code and the time of expiration of the link is not past. `404 Not Found`, if no link has the short code, or the time of expiration of its link is past.
   - time of resolution — exactly one.
   - target URL — exactly one, if the status is `302 Found`. The target URL to which the link shortener sent the person.
 - **Associations:**
@@ -58,6 +60,15 @@ The properties and the associations of each concept of the domain vocabulary, in
   - a deletion removes exactly one link, which has an owner.
   - a deletion is requested by the owner of the link.
 
+### Expiration
+
+- **Properties:**
+  - time of expiration — exactly one. It is after the time of setting.
+  - time of setting — exactly one. The time at which the owner set the expiration.
+- **Associations:**
+  - an expiration sets the time of expiration of exactly one link, which has an owner.
+  - an expiration is requested by the owner of the link.
+
 ### Visitor
 
 - **Properties:** none that the link shortener records.
@@ -73,6 +84,7 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **Associations:**
   - a user owns zero or more links.
   - a user requests zero or more deletions, each of a link that the user owns.
+  - a user requests zero or more expirations, each of a link that the user owns.
   - a user is on exactly one plan at a time: the plan of the latest plan assignment of the user, or the default plan.
   - a user has zero or more plan assignments.
 
@@ -158,6 +170,9 @@ The properties and the associations of each concept of the domain vocabulary, in
 6. A plan assignment must not put a user on a plan, other than by a login session of that user.
 7. A link with an owner must not be made, other than by a login session of the owner.
 8. A link must not be deleted, other than by a login session of its owner.
+9. A link must not get an expiration, other than by a login session of its owner.
+10. The time of expiration of an expiration must be after the time of setting of the expiration.
+11. A link whose time of expiration is past must not get an expiration.
 
 ## Notes
 
@@ -206,6 +221,18 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **A deletion keeps the resolutions of the link.** A resolution is a fact of the past. The list does not show a deleted link, so it shows no count of a deleted link.
 - **The page of the links of a user reads each resolution of the links of the user.** The read grows with each resolution, and holds the resolutions of deleted links too. One user on one computer is far below the limit of SQLite, as for the list itself.
 - **Alternative that the agent did not take: a count of the resolutions in a table of its own.** Decision 9 of the architecture gives the software system no read model table. The page reads the resolutions of the links of one user through a projection.
+- **Source of the walkthrough of the expiration of the link of a user, on Sun Oct 25 2026.** The engineer requested "new endeavor: Expire the link of a user only", and delegated the decisions of the walkthrough: "delegated". The expiration adds the concept expiration and the property time of expiration of a link. It uses the concepts link, owner, short URL, resolution, deletion, and user of Parts 1 and 2.
+- **Only the owner expires a link.** The owner is the user of the login session, and never a value of a form or a URL. A link of a visitor has no owner, so no person can expire it.
+- **The owner sets a time of expiration, and not a duration.** The model records the time in each case. A time states the result directly. The owner writes the time in UTC, because the list of the links of a user shows each time in UTC.
+- **From the time of expiration, the short URL gets `404 Not Found`.** A request for a short code of no link gets the same answer. The link shortener records no resolution with the status `404 Not Found`, so it records no resolution of a link whose time of expiration is past.
+- **A later expiration replaces an earlier one, while the time of expiration is not past.** The owner can move the time earlier or later.
+- **The time of expiration of a link does not change after it is past.** Hard constraint 11 holds this. The owner can delete the link.
+- **A link whose time of expiration is past still exists.** It stays in the list of the links of the user, with its time of expiration and its number of resolutions. It counts against the link limit, because hard constraint 2 counts the links of the owner that exist. The owner deletes the link to shorten a target URL again on a full plan.
+- **The short code of a link whose time of expiration is past is given to no new link.** Hard constraint 1 holds this, because the link exists.
+- **Alternative that the agent did not take: an expiration at once, with no time.** A deletion already stops a short URL at once.
+- **Alternative that the agent did not take: the removal of an expiration.** The request names no removal. The owner moves the time of expiration later in its place.
+- **Alternative that the agent did not take: `410 Gone` for a link whose time of expiration is past.** The answer would say that a link had the short code. A deleted link gets `404 Not Found` for the same reason.
+- **Alternative that the agent did not take: a link whose time of expiration is past does not count against the link limit.** The link still exists, and its owner still sees it. The count of the links of an owner would then read the clock, which decision 6 of the architecture keeps out of each projection.
 
 ---
 
@@ -215,3 +242,5 @@ Changed by Nicholas Henry on Sat Oct 24 2026 at 7:57:58 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:26:28 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:55:25 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:29:32 AM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 1:52:38 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 5:11:28 PM EDT
