@@ -96,4 +96,17 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
       assert has_element?(view, ~s|a[href="/links"]|, "All your links")
     end
   end
+
+  describe "offering the deletion of a link on the page of all the links" do
+    test "shows a delete action that asks for a confirmation given a link", %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      assert has_element?(
+               view,
+               ~s|#delete-Abc1234[href="/links/Abc1234"][data-method="delete"][data-confirm]|
+             )
+    end
+  end
 end

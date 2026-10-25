@@ -13,6 +13,7 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **Associations:**
   - a link has zero or one owner, who is a user.
   - a link is written as exactly one short URL.
+  - a link has zero or one deletion. A link that has a deletion no longer exists.
 
 ### Short URL
 
@@ -46,6 +47,14 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **Associations:**
   - a target URL is referred to by zero or more links. Two links can refer to the same target URL.
 
+### Deletion
+
+- **Properties:**
+  - time of deletion — exactly one.
+- **Associations:**
+  - a deletion removes exactly one link, which has an owner.
+  - a deletion is requested by the owner of the link.
+
 ### Visitor
 
 - **Properties:** none that the link shortener records.
@@ -60,6 +69,7 @@ The properties and the associations of each concept of the domain vocabulary, in
   - email address — exactly one. No two users have the same email address.
 - **Associations:**
   - a user owns zero or more links.
+  - a user requests zero or more deletions, each of a link that the user owns.
   - a user is on exactly one plan at a time: the plan of the latest plan assignment of the user, or the default plan.
   - a user has zero or more plan assignments.
 
@@ -137,13 +147,14 @@ The properties and the associations of each concept of the domain vocabulary, in
 
 ## Hard constraints
 
-1. The short code of a new link must not be the short code of a link that exists.
+1. The short code of a new link must not be the short code of a link that exists, or of a link that has a deletion.
 2. The number of links of an owner must not be more than the link limit of the plan of the owner.
 3. A plan assignment must not put a user on the plan that the user is on.
 4. A login token must not have more than one redemption.
 5. A redemption of a login token must not occur after the lifetime of the login token.
 6. A plan assignment must not put a user on a plan, other than by a login session of that user.
 7. A link with an owner must not be made, other than by a login session of the owner.
+8. A link must not be deleted, other than by a login session of its owner.
 
 ## Notes
 
@@ -173,6 +184,15 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **The list shows the short URL, the target URL, and the time of shortening of each link, the newest link first.** These are the properties of a link that the domain model records.
 - **The list holds each link of the user, with no pages.** A user on the Free plan has at most 10 links. A user on the Pro plan can have more, and one list on one computer is far below the limit of SQLite.
 - **Alternative that the agent did not take: the list on the page that shortens a target URL.** That page belongs to the feature Shorten the target URL for a user. A page of its own keeps each feature in its own slice.
+- **Source of the walkthrough of the deletion of the link of a user, on Sat Oct 24 2026.** The engineer requested "new endeavor: delete-the-link-of-a-user", and delegated the decisions of the walkthrough: "delegated to you". The deletion adds the concept deletion, and uses the concepts link, owner, short code, short URL, resolution, and user of Parts 1 and 2.
+- **Only the owner deletes a link.** The owner is the user of the login session, and never a value of a form or a URL. A link of a visitor has no owner, so no person can delete it.
+- **A deletion cannot be undone.** The request names no restore. The user shortens the target URL again to get a new link.
+- **The short code of a deleted link is given to no new link.** A person who has the short URL from before the deletion then gets `404 Not Found`, and never the target URL of a different link. Hard constraint 1 holds this.
+- **A deleted link does not count against the link limit.** Hard constraint 2 counts the links of the owner that exist. A user on the Free plan with 10 links deletes one, and can then shorten a target URL again.
+- **A request to delete a link that the user does not own gets the same answer as a request for a short code of no link.** The answer then does not say whether a link of a different user has the short code.
+- **The user deletes a link from the list of the links of the user, and confirms the deletion first.** The list is the one place that shows each link of the user.
+- **Alternative that the agent did not take: a short code of a deleted link that a new link can take.** It gives more short codes. A short URL that a person saved would then send that person to the target URL of a different person.
+- **Alternative that the agent did not take: a deletion that hides the link and keeps its resolution.** The user who deletes a link expects that its short URL stops.
 
 ---
 
@@ -180,3 +200,4 @@ Authored by Nicholas Henry on Sat Oct 17 2026 at 10:08:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 10:55:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 7:57:58 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:26:28 PM EDT
+Changed by Nicholas Henry on Sat Oct 24 2026 at 9:55:25 PM EDT
