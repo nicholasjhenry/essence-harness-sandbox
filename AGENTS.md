@@ -28,7 +28,7 @@ This repository installs the harness. The system essence is in `.essence/system/
 
 - the initialization-reads-the-system-and-local-essence-in-order rule — the read that the session starts with
 
-## The work of an endeavor is done in a sprite only at the request of the engineer, the sprite is set up first, and a delegated endeavor runs in a Claude Code session in the sprite
+## The work of an endeavor is done in its own sprite only at the request of the engineer, the sprite is set up first and destroyed after its pull requests, and a delegated endeavor runs in a Claude Code session in the sprite
 
 ### Rules
 
@@ -37,9 +37,10 @@ This repository installs the harness. The system essence is in `.essence/system/
   - **Enforced:** when the work of an endeavor is to start
   - **Violation response:** the agent does the work in the local repository, and does not start the work in a sprite.
 - **R2.** A sprite must be set up by each of the following steps, in this order, before the work of an endeavor starts in it:
-  1. The agent tells the engineer that 1Password asks for an approval, and then runs `./sprite-auth.sh <sprite>` on the computer of the engineer. The engineer approves the read in 1Password. The script logs the GitHub CLI of the sprite in, with the token at `op://Infrastructure/GitHub/credential` in 1Password. The token reads `essence-harness` and `agents-playbook`, and writes to `essence-harness-sandbox`.
-  2. The agent clones the repository with its submodules, in the sprite: `git clone --recurse-submodules https://github.com/nicholasjhenry/essence-harness-sandbox ~/app`.
-  3. The agent runs `./sprite-setup.sh --name "<name>" --email "<email>"` in `~/app`, with the `user.name` and the `user.email` of `git config` of the local repository.
+  1. The agent makes the sprite on the computer of the engineer: `sprite create --skip-console <sprite>`.
+  2. The agent tells the engineer that 1Password asks for an approval, and then runs `./sprite-auth.sh <sprite>` on the computer of the engineer. The engineer approves the read in 1Password. The script logs the GitHub CLI of the sprite in, with the token at `op://Infrastructure/GitHub/credential` in 1Password. The token reads `essence-harness` and `agents-playbook`, and writes to `essence-harness-sandbox`.
+  3. The agent clones the repository with its submodules, in the sprite: `git clone --recurse-submodules https://github.com/nicholasjhenry/essence-harness-sandbox ~/app`.
+  4. The agent runs `./sprite-setup.sh --name "<name>" --email "<email>"` in `~/app`, with the `user.name` and the `user.email` of `git config` of the local repository.
   - **Classification:** behavioral
   - **Enforced:** when the work of an endeavor is to start in a sprite
   - **Violation response:** the agent stops the work in the sprite, and does each step that is not done, in order.
@@ -59,6 +60,24 @@ This repository installs the harness. The system essence is in `.essence/system/
   - **Classification:** behavioral
   - **Enforced:** when `./sprite-agent.sh` ends
   - **Violation response:** the agent gives the command that the script printed, or lists the sessions with `sprite sessions list`, and gives the command.
+- **R7.** A sprite must not hold the work of more than one endeavor.
+  - **Classification:** structural
+  - **Enforced:** when the work of an endeavor is to start in a sprite
+  - **Violation response:** the agent makes a new sprite for the endeavor, and does each step of R2 in it.
+- **R8.** The name of the sprite of an endeavor must be the description of the endeavor, in lower case, with a dash in place of each space.
+  - **Classification:** structural
+  - **Enforced:** when a sprite is made
+  - **Violation response:** before the clone, the agent destroys the sprite, and makes it again with the name.
+- **R9.** The sprite of an endeavor must be destroyed when each pull request of the endeavor is merged or closed.
+  - **Classification:** behavioral
+  - **Enforced:** when the agent merges or closes a pull request of the endeavor, and when the agent finds that the last open pull request of the endeavor is merged or closed
+  - **Violation response:** the agent destroys the sprite with `sprite destroy --force <sprite>`, and reports the destruction to the engineer.
+- **R10.** A sprite may be destroyed only if any of the following is true:
+  - each pull request of its endeavor is merged or closed, and the clone of the sprite holds no commit and no change that is not on GitHub
+  - the engineer requests the destruction of the sprite
+  - **Classification:** behavioral
+  - **Enforced:** when a sprite is to be destroyed
+  - **Violation response:** the agent does not destroy the sprite. It reports to the engineer each open pull request, and each commit or change that is only in the clone, and waits.
 
 ### Facts
 
@@ -69,6 +88,9 @@ This repository installs the harness. The system essence is in `.essence/system/
 - **start script** — `sprite-agent.sh`, in the root of the repository
 - **prompt template** — `sprite-agent-prompt.md`, in the root of the repository
 - **delegated endeavor** — an endeavor that has a delegation, by the `a-reviewer-overrides-entry-criteria-and-delegated-work-ends-in-a-pull-request` rule, in `.essence/system/rules/`
+- **description of an endeavor** — the words of the request of the engineer that name the work of the endeavor, such as the name of its feature. The directory of the endeavor takes the same description after its timestamp.
+- **pull request**, **work branch** — the vocabulary of the version-control practice, in `.essence/system/practices/version-control/`
+- **pull request of an endeavor** — a pull request of a work branch that the clone of the sprite of the endeavor pushed
 
 ### Examples
 
@@ -81,12 +103,21 @@ This repository installs the harness. The system essence is in `.essence/system/
 - ❌ The agent sets up the sprite of a delegated endeavor, and then edits the code in a local copy, and copies each file into the sprite — breaks R4. Two copies of the code then exist, and the agent keeps them the same by hand.
 - ❌ The agent starts the session with "build the availability check", and the engineer requested "implement: Check the availability of a short code" — breaks R5. The session then decides on words that the engineer did not write.
 - ❌ The agent reports that the session started, and gives no session ID — breaks R6. The engineer then has to list the sessions to attach.
-- ✅ The engineer requests "new endeavor: implement: Check the availability of a short code, completely delegated, develop in a sprite". The agent does each step of R2, and then runs `./sprite-agent.sh mcp-essence-harness-sandbox "<the request>"`. It reports `sprite attach -s mcp-essence-harness-sandbox 6735`. The engineer attaches, logs Claude Code in on the first attach, and the session does the endeavor.
-- ✅ The engineer requests "develop it in a sprite". The agent tells the engineer to expect the approval of 1Password, and runs `./sprite-auth.sh mcp-essence-harness-sandbox`. The engineer approves it. The script pipes the token from 1Password to `gh auth login --with-token` and `gh auth setup-git` on the sprite. The agent then clones the repository with its submodules, and runs `./sprite-setup.sh --name "Nicholas Henry" --email "<email>"` in `~/app`.
+- ❌ The agent starts a new endeavor in the sprite of an earlier endeavor, whose pull request is merged — breaks R7. The new endeavor then starts with the database, the branches, and the processes of the earlier endeavor.
+- ❌ The agent names the sprite of the endeavor Check the availability of a short code `sandbox-2` — breaks R8. The engineer then cannot tell the endeavor of the sprite from its name.
+- ❌ The engineer requests the merge of the pull request of an endeavor, the agent merges it, and the sprite stays — breaks R9. The sprite then costs money, and its URL serves a branch that is merged.
+- ❌ The session in the sprite opens the pull request, and the agent destroys the sprite — breaks R10. The engineer then cannot try the app of the work branch before the merge.
+- ✅ The engineer requests "new endeavor: implement: Check the availability of a short code, completely delegated, develop in a sprite". The agent does each step of R2 for the sprite `check-the-availability-of-a-short-code`, and then runs `./sprite-agent.sh check-the-availability-of-a-short-code "<the request>"`. It reports `sprite attach -s check-the-availability-of-a-short-code 6735`. The engineer attaches, logs Claude Code in on the first attach, and the session does the endeavor.
+- ✅ The engineer requests "develop it in a sprite". The agent runs `sprite create --skip-console check-the-availability-of-a-short-code`. It tells the engineer to expect the approval of 1Password, and runs `./sprite-auth.sh check-the-availability-of-a-short-code`. The engineer approves it. The script pipes the token from 1Password to `gh auth login --with-token` and `gh auth setup-git` on the sprite. The agent then clones the repository with its submodules, and runs `./sprite-setup.sh --name "Nicholas Henry" --email "<email>"` in `~/app`.
+- ✅ The engineer requests the merge of the pull request of the endeavor. The agent squash-merges it. No other pull request of the endeavor is open, and `git status` and `git log --branches --not --remotes` in the clone of the sprite show nothing. The agent runs `sprite destroy --force check-the-availability-of-a-short-code`, and reports the destruction.
 
 ### Rationale
 
 A sprite holds the code of an endeavor while the code is written and tested, apart from the computer of the engineer. The engineer decides when an endeavor needs it, so R1 waits for a request. Each sprite starts with no clone, no git identity, no dependencies, and no service.
+
+Each endeavor gets its own sprite, by R7. Two endeavors in one sprite share one clone, one database, and one service, so they cannot run at the same time. The work of one endeavor also changes the start of the next. A new sprite for each endeavor starts clean, and the endeavors can run in parallel. The cost is the setup of R2 for each endeavor, with its approval of 1Password, and a new login of Claude Code on the first attach. R8 gives the sprite the description of its endeavor, so the name of the sprite and its URL name the endeavor.
+
+The sprite stays until the engineer decides each pull request of the endeavor, because the description of a pull request gives the URL of the sprite. The engineer tries the app of the work branch there before the merge. R9 then destroys the sprite, and R10 keeps any work that is only in the clone. The session in the sprite ends before the merge, so the agent on the computer of the engineer destroys the sprite. A destruction cannot be undone. It removes the files, the services, the checkpoints, and the URL of the sprite.
 
 The setup script is in the repository, so it runs after the clone. The submodules are private, so the login comes before the clone. The script does each step that needs no secret:
 
@@ -115,3 +146,4 @@ Changed by Nicholas Henry on Sun Oct 25 2026 at 10:54:53 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:55:49 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:07:39 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:16:35 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 1:36:10 PM EDT
