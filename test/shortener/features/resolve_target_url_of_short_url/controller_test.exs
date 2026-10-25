@@ -1,7 +1,8 @@
 defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.ControllerTest do
   use ShortenerWeb.ConnCase, async: false
 
-  alias Shortener.Shared.LinkShortened
+  alias Shortener.DCB.{Query, QueryItem}
+  alias Shortener.Shared.{LinkShortened, ShortUrlResolved}
 
   setup do
     fact = %LinkShortened{
@@ -13,6 +14,11 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.ControllerTest do
     :ok = Shortener.EventStore.append(LinkShortened.to_event(fact), nil)
   end
 
+  defp resolutions do
+    query = %Query{items: [%QueryItem{types: [ShortUrlResolved.type_name()], tags: []}]}
+    Shortener.EventStore.read(query, [])
+  end
+
   describe "GET /:short_code" do
     test "redirects to the target URL given the short URL of a link", %{conn: conn} do
       conn = get(conn, "/Abc1234")
@@ -21,10 +27,23 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.ControllerTest do
       assert get_resp_header(conn, "location") == ["https://example.com/a/long/path?q=1"]
     end
 
+    test "records one resolution given the short URL of a link", %{conn: conn} do
+      get(conn, "/Abc1234")
+
+      assert [%{event: event}] = resolutions()
+      assert ShortUrlResolved.from_event(event).short_code == "Abc1234"
+    end
+
     test "answers not found given a short code that no link has", %{conn: conn} do
       conn = get(conn, "/Zzz9999")
 
       assert html_response(conn, 404) =~ "Not Found"
+    end
+
+    test "records no resolution given a short code that no link has", %{conn: conn} do
+      get(conn, "/Zzz9999")
+
+      assert resolutions() == []
     end
 
     test "leaves the page of a visitor at its path", %{conn: conn} do

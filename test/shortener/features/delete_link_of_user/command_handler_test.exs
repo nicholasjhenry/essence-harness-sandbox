@@ -7,8 +7,8 @@ defmodule Shortener.Features.DeleteLinkOfUser.CommandHandlerTest do
   alias Shortener.EventStore
   alias Shortener.Features.DeleteLinkOfUser.{CommandHandler, LinkOwner}
   alias Shortener.Features.{EndLoginSessionOfUser, ListLinksOfUser, ShortenTargetUrlForUser}
-  alias Shortener.Features.ResolveTargetUrlOfShortUrl.Resolution
-  alias Shortener.Shared.{LinkDeleted, LinkShortened}
+  alias Shortener.Features.ResolveTargetUrlOfShortUrl
+  alias Shortener.Shared.{LinkDeleted, LinkShortened, ShortUrlResolved}
 
   @now ~U[2026-10-24 12:00:00.000000Z]
 
@@ -179,12 +179,15 @@ defmodule Shortener.Features.DeleteLinkOfUser.CommandHandlerTest do
     end
 
     test "resolves to not found given a deleted link" do
-      assert {:error, :not_found} = Resolution.resolve("Ada1234")
-      assert {:ok, "https://example.com/Ada5678"} = Resolution.resolve("Ada5678")
+      assert {:error, :not_found} =
+               ResolveTargetUrlOfShortUrl.CommandHandler.handle("Ada1234", @now)
+
+      assert {:ok, %ShortUrlResolved{target_url: "https://example.com/Ada5678"}} =
+               ResolveTargetUrlOfShortUrl.CommandHandler.handle("Ada5678", @now)
     end
 
     test "leaves the deleted link out of the list of the links of the user" do
-      assert [%LinkShortened{short_code: "Ada5678"}] =
+      assert [%ListLinksOfUser.ListedLink{link: %LinkShortened{short_code: "Ada5678"}}] =
                ListLinksOfUser.LinkList.of("ada@example.com")
     end
 

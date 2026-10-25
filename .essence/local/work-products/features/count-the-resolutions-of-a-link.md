@@ -11,8 +11,8 @@
 | domain walkthrough | 2026-10-25 |
 | design | 2026-10-25 |
 | design inspection | 2026-10-25 |
-| code | |
-| code inspection | |
+| code | 2026-10-25 |
+| code inspection | 2026-10-25 |
 | integration | |
 
 ## Request
@@ -76,7 +76,19 @@ An agent in a session other than the session of the author inspected the design,
 4. The domain model records that the page reads each resolution of the links of the user.
 5. The `@spec` of `handle/2` names `{:error, :append_condition_failed}`, and the controller answers `404 Not Found` for it.
 
+### Code inspection
+
+An agent in a session other than the session of the author inspected the code, and accepted it. It applied the testing-names-given skill. `mix test` gave 172 tests with no failure in the sprite `mcp-essence-harness-sandbox`, `mix format --check-formatted` passed, and `mix compile --warnings-as-errors --force` passed. It found no blocking defect. The code takes findings 1, 2, and 4, and `mix test` then gave 172 tests with no failure again. It does not take findings 3, 5, and 6:
+
+1. The controller names each error, `:not_found` and `:append_condition_failed`, as the controller of the deletion does.
+2. The two tests of the target URL of a link of a visitor and of a user put the condition after "given".
+3. The describe block `"GET /:short_code"` of the test of the controller names a route. It is older than this feature.
+4. The module attribute `@now` of the test of `LinkList` follows the aliases.
+5. One test of the page uses `DateTime.utc_now()`. The time of a resolution is not shown on the page, so the test does not depend on it.
+6. No test drives the second read of the decider after a deletion, as finding 2 of the design inspection accepts.
+
 ---
 
 Authored by Nicholas Henry on Sun Oct 25 2026 at 11:21:14 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:31:43 AM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 11:35:46 AM EDT

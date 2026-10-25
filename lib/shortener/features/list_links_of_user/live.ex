@@ -1,7 +1,8 @@
 defmodule Shortener.Features.ListLinksOfUser.Live do
   @moduledoc """
   The page on which a logged-in user sees each link that the user owns, the
-  newest first. The owner is the user of the login session.
+  newest first, with the number of its resolutions. The owner is the user
+  of the login session.
   """
 
   use ShortenerWeb, :live_view
@@ -18,7 +19,7 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
      socket
      |> assign(:page_title, "All your links")
      |> assign(:links_empty?, links == [])
-     |> stream(:links, links, dom_id: &"link-#{&1.short_code}")}
+     |> stream(:links, links, dom_id: &"link-#{&1.link.short_code}")}
   end
 
   @impl true
@@ -36,14 +37,19 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
       </p>
 
       <.table :if={!@links_empty?} id="links" rows={@streams.links}>
-        <:col :let={{_id, link}} label="Short URL">
+        <:col :let={{_id, %{link: link}}} label="Short URL">
           <a href={short_url_of(link)} class="link link-primary break-all">{short_url_of(link)}</a>
         </:col>
-        <:col :let={{_id, link}} label="Target URL">
+        <:col :let={{_id, %{link: link}}} label="Target URL">
           <span class="break-all">{link.target_url}</span>
         </:col>
-        <:col :let={{_id, link}} label="Shortened">{shortened_text(link.shortened_at)}</:col>
-        <:action :let={{_id, link}}>
+        <:col :let={{_id, %{link: link}}} label="Shortened">
+          {shortened_text(link.shortened_at)}
+        </:col>
+        <:col :let={{_id, listed}} label="Resolutions">
+          <span id={"resolutions-#{listed.link.short_code}"}>{listed.resolution_count}</span>
+        </:col>
+        <:action :let={{_id, %{link: link}}}>
           <.link
             id={"delete-#{link.short_code}"}
             href={~p"/links/#{link.short_code}"}
