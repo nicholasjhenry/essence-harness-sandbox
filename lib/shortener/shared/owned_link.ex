@@ -1,7 +1,7 @@
-defmodule Shortener.Features.ExpireLinkOfUser.OwnedLink do
+defmodule Shortener.Shared.OwnedLink do
   @moduledoc """
   The link of a short code with its time of expiration, if the user owns the
-  link, for the page of the expiration.
+  link, for the page of the expiration and the page of the target URL change.
 
   It reads the events through the `LinkOfShortCode` projection, and appends
   nothing.

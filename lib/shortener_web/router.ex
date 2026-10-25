@@ -42,6 +42,7 @@ defmodule ShortenerWeb.Router do
       live "/plans", AssignPlanToUser.Live
       live "/links", ListLinksOfUser.Live
       live "/links/:short_code/expiration", ExpireLinkOfUser.Live
+      live "/links/:short_code/target-url", ChangeTargetUrlOfLink.Live
     end
 
     delete "/links/:short_code", DeleteLinkOfUser.Controller, :delete

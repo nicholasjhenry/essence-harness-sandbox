@@ -93,6 +93,15 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
         <:action :let={{_id, listed}}>
           <.link
             :if={!Expiration.passed?(listed.expires_at, @now)}
+            id={"change-target-url-#{listed.link.short_code}"}
+            navigate={~p"/links/#{listed.link.short_code}/target-url"}
+          >
+            Change target URL
+          </.link>
+        </:action>
+        <:action :let={{_id, listed}}>
+          <.link
+            :if={!Expiration.passed?(listed.expires_at, @now)}
             id={"expire-#{listed.link.short_code}"}
             navigate={~p"/links/#{listed.link.short_code}/expiration"}
           >

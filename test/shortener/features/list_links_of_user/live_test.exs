@@ -213,4 +213,28 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
       assert has_element?(view, "#delete-Abc1234")
     end
   end
+
+  describe "offering the target URL change of a link on the page of all the links" do
+    test "offers the target URL change given a link whose time of expiration is not past",
+         %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      assert view |> element("#change-target-url-Abc1234") |> render() =~
+               ~s(href="/links/Abc1234/target-url")
+
+      assert view |> element("#change-target-url-Abc1234") |> render() =~ "Change target URL"
+    end
+
+    test "does not offer the target URL change given a time of expiration that is past",
+         %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+      expire("Abc1234", "ada@example.com", ~U[2026-10-24 22:00:00Z])
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      refute has_element?(view, "#change-target-url-Abc1234")
+    end
+  end
 end

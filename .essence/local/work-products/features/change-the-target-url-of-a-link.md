@@ -11,7 +11,7 @@
 | domain walkthrough | 2026-10-25 |
 | design | 2026-10-25 |
 | design inspection | 2026-10-25 |
-| code | |
+| code | 2026-10-25 |
 | code inspection | |
 | integration | |
 
@@ -105,3 +105,4 @@ An agent in a session other than the session of the author inspected the design,
 Authored by Nicholas Henry on Sun Oct 25 2026 at 11:21:14 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 5:30:08 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 5:33:15 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 5:36:34 PM EDT
