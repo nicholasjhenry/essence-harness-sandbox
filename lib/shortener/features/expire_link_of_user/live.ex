@@ -8,8 +8,8 @@ defmodule Shortener.Features.ExpireLinkOfUser.Live do
 
   import ShortenerWeb.LinkComponents, only: [short_url_of: 1, time_text: 1]
 
-  alias Shortener.Features.ExpireLinkOfUser.{Command, CommandHandler, OwnedLink}
-  alias Shortener.Shared.Expiration
+  alias Shortener.Features.ExpireLinkOfUser.{Command, CommandHandler}
+  alias Shortener.Shared.{Expiration, OwnedLink}
 
   @impl true
   def mount(%{"short_code" => short_code}, _session, socket) do

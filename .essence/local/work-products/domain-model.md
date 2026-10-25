@@ -8,7 +8,7 @@ The properties and the associations of each concept of the domain vocabulary, in
 
 - **Properties:**
   - short code — exactly one. No two links have the same short code.
-  - target URL — exactly one.
+  - target URL — exactly one. The new target URL of the latest target URL change of the link, or the target URL that the person shortened, if the link has no target URL change.
   - time of shortening — exactly one. The time at which the link shortener made the link.
   - time of expiration — zero or one. The time of expiration of the latest expiration of the link.
 - **Associations:**
@@ -17,6 +17,7 @@ The properties and the associations of each concept of the domain vocabulary, in
   - a link has zero or one deletion. A link that has a deletion no longer exists.
   - a link has zero or more resolutions, through its short URL.
   - a link has zero or more expirations. The latest one gives the time of expiration of the link.
+  - a link has zero or more target URL changes. The latest one gives the target URL of the link.
 
 ### Short URL
 
@@ -51,6 +52,7 @@ The properties and the associations of each concept of the domain vocabulary, in
   - host — exactly one, not empty.
 - **Associations:**
   - a target URL is referred to by zero or more links. Two links can refer to the same target URL.
+  - a target URL is the new target URL of zero or more target URL changes.
 
 ### Deletion
 
@@ -69,6 +71,15 @@ The properties and the associations of each concept of the domain vocabulary, in
   - an expiration sets the time of expiration of exactly one link, which has an owner.
   - an expiration is requested by the owner of the link.
 
+### Target URL change
+
+- **Properties:**
+  - new target URL — exactly one. It is not the target URL that the link has before the change.
+  - time of change — exactly one. The time at which the owner changed the target URL.
+- **Associations:**
+  - a target URL change changes the target URL of exactly one link, which has an owner.
+  - a target URL change is requested by the owner of the link.
+
 ### Visitor
 
 - **Properties:** none that the link shortener records.
@@ -85,6 +96,7 @@ The properties and the associations of each concept of the domain vocabulary, in
   - a user owns zero or more links.
   - a user requests zero or more deletions, each of a link that the user owns.
   - a user requests zero or more expirations, each of a link that the user owns.
+  - a user requests zero or more target URL changes, each of a link that the user owns.
   - a user is on exactly one plan at a time: the plan of the latest plan assignment of the user, or the default plan.
   - a user has zero or more plan assignments.
 
@@ -173,6 +185,9 @@ The properties and the associations of each concept of the domain vocabulary, in
 9. A link must not get an expiration, other than by a login session of its owner.
 10. The time of expiration of an expiration must be after the time of setting of the expiration.
 11. A link whose time of expiration is past must not get an expiration.
+12. A link must not get a target URL change, other than by a login session of its owner.
+13. The new target URL of a target URL change must not be the target URL that the link has.
+14. A link whose time of expiration is past must not get a target URL change.
 
 ## Notes
 
@@ -233,6 +248,19 @@ The properties and the associations of each concept of the domain vocabulary, in
 - **Alternative that the agent did not take: the removal of an expiration.** The request names no removal. The owner moves the time of expiration later in its place.
 - **Alternative that the agent did not take: `410 Gone` for a link whose time of expiration is past.** The answer would say that a link had the short code. A deleted link gets `404 Not Found` for the same reason.
 - **Alternative that the agent did not take: a link whose time of expiration is past does not count against the link limit.** The link still exists, and its owner still sees it. The count of the links of an owner would then read the clock, which decision 6 of the architecture keeps out of each projection.
+- **Source of the walkthrough of the change of the target URL of a link, on Sun Oct 25 2026.** The engineer requested "let's start a separate endeavor for "Change the target URL of a link", delegated, sprite", and delegated the decisions of the walkthrough: "delegated". The change adds the concept target URL change. It uses the concepts link, owner, target URL, short code, short URL, resolution, deletion, expiration, and user of Parts 1 and 2.
+- **Only the owner changes the target URL of a link.** The owner is the user of the login session, and never a value of a form or a URL. A link of a visitor has no owner, so no person can change its target URL.
+- **The short code, the time of shortening, the owner, the time of expiration, and the resolutions of the link do not change.** The owner keeps the short URL that the owner gave to other persons, and the link keeps its place in the list.
+- **The new target URL is a target URL.** It has the `http` or the `https` scheme and a host, as the target URL of a shortening has.
+- **A change to the target URL that the link has is refused.** It changes nothing, and an event that changes nothing is not recorded. Hard constraint 13 holds this. Two target URLs are compared as text, after the spaces at the start and the end are removed.
+- **From the change, each resolution sends the person to the new target URL.** Each resolution records the target URL to which it sent the person, so a resolution before the change still says that it went to the old target URL.
+- **The target URL of a link whose time of expiration is past does not change.** Hard constraint 14 holds this, as hard constraint 11 holds the time of expiration. The short URL of the link resolves to no target URL, so a new target URL gives the owner nothing. The owner can delete the link.
+- **A target URL change of a deleted link is refused, with the answer of a short code of no link.** A request to change a link that the user does not own gets the same answer. The answer then does not say whether a link of a different user has the short code.
+- **The number of the links of the owner does not change.** Hard constraint 2 is not checked again, because a target URL change makes no link.
+- **The owner changes the target URL from the list of the links of the user.** The list is the one place that shows each link of the user.
+- **Alternative that the agent did not take: a list of the earlier target URLs of a link.** The request names no history. The resolutions record the target URL of each resolution.
+- **Alternative that the agent did not take: a change of the short code of a link.** The request keeps the short code. A new short code is a new link.
+- **Alternative that the agent did not take: a target URL change of a link whose time of expiration is past, which starts the link again.** The time of expiration of the link does not change after it is past. A link that resolves again would need a removal of the expiration, which the request does not name.
 
 ---
 
@@ -244,3 +272,4 @@ Changed by Nicholas Henry on Sat Oct 24 2026 at 9:55:25 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:29:32 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:52:38 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 5:11:28 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 5:30:00 PM EDT

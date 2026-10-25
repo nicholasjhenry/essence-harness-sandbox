@@ -2,7 +2,13 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.ControllerTest do
   use ShortenerWeb.ConnCase, async: false
 
   alias Shortener.DCB.{Query, QueryItem}
-  alias Shortener.Shared.{LinkExpirationSet, LinkShortened, ShortUrlResolved}
+
+  alias Shortener.Shared.{
+    LinkExpirationSet,
+    LinkShortened,
+    LinkTargetUrlChanged,
+    ShortUrlResolved
+  }
 
   setup do
     fact = %LinkShortened{
@@ -60,6 +66,21 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.ControllerTest do
 
       assert html_response(conn, 404) =~ "Not Found"
       assert resolutions() == []
+    end
+
+    test "redirects to the new target URL given a link whose target URL changed", %{conn: conn} do
+      fact = %LinkTargetUrlChanged{
+        short_code: "Abc1234",
+        owner_email_address: "ada@example.com",
+        target_url: "https://example.com/new",
+        changed_at: DateTime.utc_now()
+      }
+
+      :ok = Shortener.EventStore.append(LinkTargetUrlChanged.to_event(fact), nil)
+      conn = get(conn, "/Abc1234")
+
+      assert conn.status == 302
+      assert get_resp_header(conn, "location") == ["https://example.com/new"]
     end
 
     test "leaves the page of a visitor at its path", %{conn: conn} do

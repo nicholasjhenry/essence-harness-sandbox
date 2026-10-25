@@ -5,11 +5,18 @@ defmodule Shortener.Features.ExpireLinkOfUser.CommandHandlerTest do
 
   alias Shortener.DCB.{DecisionModel, Query, QueryItem}
   alias Shortener.EventStore
-  alias Shortener.Features.ExpireLinkOfUser.{Command, CommandHandler, OwnedLink}
+  alias Shortener.Features.ExpireLinkOfUser.{Command, CommandHandler}
   alias Shortener.Features.{DeleteLinkOfUser, EndLoginSessionOfUser, ShortenTargetUrlForUser}
   alias Shortener.Features.ResolveTargetUrlOfShortUrl
   alias Shortener.Projections.{LinkOfShortCode, LoginSessionUser}
-  alias Shortener.Shared.{LinkDeleted, LinkExpirationSet, LinkShortened, ShortUrlResolved}
+
+  alias Shortener.Shared.{
+    LinkDeleted,
+    LinkExpirationSet,
+    LinkShortened,
+    OwnedLink,
+    ShortUrlResolved
+  }
 
   @now ~U[2026-10-25 12:00:00.000000Z]
   @later ~U[2026-10-26 12:00:00Z]

@@ -3,7 +3,7 @@ defmodule Shortener.Features.ListLinksOfUser.LinkListTest do
 
   alias Shortener.Features.ListLinksOfUser.{LinkList, ListedLink}
   alias Shortener.Features.ResolveTargetUrlOfShortUrl
-  alias Shortener.Shared.LinkShortened
+  alias Shortener.Shared.{LinkShortened, LinkTargetUrlChanged}
 
   @now ~U[2026-10-25 12:00:00Z]
 
@@ -93,6 +93,29 @@ defmodule Shortener.Features.ListLinksOfUser.LinkListTest do
       resolve("Grace12")
 
       assert resolution_counts(LinkList.of("ada@example.com")) == %{"Ada1234" => 0}
+    end
+  end
+
+  describe "listing the links of a user after a target URL change" do
+    test "gives the new target URL given a change of the target URL of a link" do
+      shorten("Abc1234", "ada@example.com")
+      shorten("Def5678", "ada@example.com")
+
+      fact = %LinkTargetUrlChanged{
+        short_code: "Abc1234",
+        owner_email_address: "ada@example.com",
+        target_url: "https://example.com/new",
+        changed_at: @now
+      }
+
+      :ok = Shortener.EventStore.append(LinkTargetUrlChanged.to_event(fact), nil)
+
+      targets = Map.new(LinkList.of("ada@example.com"), &{&1.link.short_code, &1.link.target_url})
+
+      assert targets == %{
+               "Abc1234" => "https://example.com/new",
+               "Def5678" => "https://example.com/Def5678"
+             }
     end
   end
 end
