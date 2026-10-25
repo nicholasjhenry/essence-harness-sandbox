@@ -2,3 +2,7 @@
 	path = .vendor/essence-harness
 	url = https://github.com/nicholasjhenry/essence-harness
 	branch = develop
+[submodule ".vendor/agents-playbook"]
+	path = .vendor/agents-playbook
+	url = https://github.com/nicholasjhenry/agents-playbook
+	branch = develop
