@@ -22,7 +22,7 @@ The engineer requested "Expire the link of a user only", and delegated the decis
 
 ## Design
 
-A logged-in user opens the page `/links`. Each row of the list has the column `Expires`, which shows `Never`, the time of expiration, or `Expired` and the time of expiration. Each row whose time of expiration is not past has the action `Expire`. The action opens the page `/links/<short code>/expiration`. The page shows the short URL, the target URL, and the time of expiration of the link. It has one field, `Time of expiration (UTC)`, of the type `datetime-local`, and the button `Set the expiration`. The user types a time after the time now, and selects the button. The link shortener appends one `LinkExpirationSet` event. The page `/links` opens with the message `The link expires at 2026-10-26 12:00 UTC.` From that time, the short URL gets `404 Not Found`, and the row shows `Expired`.
+A logged-in user opens the page `/links`. Each row of the list has the column `Expires`, which shows `Never`, the time of expiration, or `Expired` and the time of expiration. Each row whose time of expiration is not past has an action: `Expire` given no expiration, or `Change expiration` given a later time of expiration. The action opens the page `/links/<short code>/expiration`. The page shows the short URL, the target URL, and the time of expiration of the link. It has one field, `Time of expiration (UTC)`, of the type `datetime-local`, and the button `Set the expiration`. The user types a time after the time now, and selects the button. The link shortener appends one `LinkExpirationSet` event. The page `/links` opens with the message `The link expires at 2026-10-26 12:00 UTC.` From that time, the short URL gets `404 Not Found`, and the row shows `Expired`.
 
 The owner comes from `current_scope`, and never from the URL or a form, by decision 12 of the architecture. A short code of no link, of a deleted link, of a link of a visitor, or of a link of a different user gets the same answer: the message `You own no link with this short code.` and no event. A link whose time of expiration is past gets the message `The link has expired. Its time of expiration does not change.` and no event.
 
@@ -50,15 +50,15 @@ The slice is `lib/shortener/features/expire_link_of_user/`, with `command.ex`, `
 | `Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler` | decides on `link: LinkOfShortCode.new(short_code)`. `decide/2` gives `{:error, :not_found}` given `nil`, and given a link whose time of expiration is past by `Expiration.passed?/2` with `now`. Otherwise it decides as before, from the link of the state. Its moduledoc states the expiration. |
 | `Shortener.Features.ListLinksOfUser.ListedLink` | gets the field `expires_at`, a `DateTime.t()` or `nil`. |
 | `Shortener.Features.ListLinksOfUser.LinkList` | builds the model with `link_expirations: LinkExpirations.new(email_address)` too, and puts the `expires_at` of each link in its `ListedLink`. |
-| `Shortener.Features.ListLinksOfUser.Live` | assigns `now` from `DateTime.utc_now()` at the mount and on each resolution. Each row gets the column `Expires`, with the ID `expires-<short code>` and the text `Never`, `<time>`, or `Expired <time>`, by `Expiration.passed?/2` with `now`. Each row whose time of expiration is not past gets the action `<.link>` with the ID `expire-<short code>`, `navigate={~p"/links/#{link.short_code}/expiration"}`, and the text `Expire`. The column `Shortened` uses `time_text/1`. |
+| `Shortener.Features.ListLinksOfUser.Live` | assigns `now` from `DateTime.utc_now()` at the mount and on each resolution. Each row gets the column `Expires`, with the ID `expires-<short code>` and the text `Never`, `<time>`, or `Expired <time>`, by `Expiration.passed?/2` with `now`. Each row whose time of expiration is not past gets the action `<.link>` with the ID `expire-<short code>`, `navigate={~p"/links/#{link.short_code}/expiration"}`, and the text `Expire` given no expiration, or `Change expiration` given a later time of expiration. The column `Shortened` uses `time_text/1`. |
 
 `UserLinkCount`, `ShortCodeClaimed`, `UserLinks`, and `DeleteLinkOfUser.LinkOwner` do not change. A link whose time of expiration is past still exists, so it counts against the link limit, keeps its short code claimed, stays in the list, and can be deleted.
 
-The list sets `now` only at the mount and on each resolution. A link whose time of expiration passes while the page is open keeps its time and `Expire` until the next reload. The page of the expiration and the decision then still give `:expired`, so no hard constraint breaks.
+The list sets `now` only at the mount and on each resolution. A link whose time of expiration passes while the page is open keeps its time and its action until the next reload. The page of the expiration and the decision then still give `:expired`, so no hard constraint breaks.
 
 ### Sequence
 
-1. The user selects `Expire` on `/links`. The live navigation opens `/links/<short code>/expiration`. The `:require_authenticated` callback checks the login session, and assigns `current_scope`.
+1. The user selects `Expire` or `Change expiration` on `/links`. The live navigation opens `/links/<short code>/expiration`. The `:require_authenticated` callback checks the login session, and assigns `current_scope`.
 2. `Live.mount/3` calls `OwnedLink.of(email_address, short_code)`, and shows the short URL, the target URL, and the time of expiration, or `Never`.
 3. The user types a time, and selects `Set the expiration`. `handle_event("save", ...)` builds the changeset with `now`, and applies it. An error of the field stays on the form.
 4. The LiveView calls `CommandHandler.handle(current_scope, short_code, command, now)`.
@@ -84,7 +84,7 @@ The list sets `now` only at the mount and on each resolution. A link whose time 
 - A link whose time of expiration is past: it still counts against the link limit by `LinkUsage.of/1`, a shortening that chooses its short code gives `{:error, :short_code_taken}`, and `DeleteLinkOfUser.CommandHandler.handle/3` deletes it.
 - The resolution: `ResolveTargetUrlOfShortUrl.CommandHandler.handle/2` gives the target URL before the time of expiration. It gives `{:error, :not_found}` at the time of expiration and after it, and appends no resolution. `GET /<short code>` of a link whose time of expiration is past answers `404 Not Found`.
 - The page of the expiration: a visitor goes to `/log-in`. The page shows the short URL and `Never` given a link of the user. A submission of a later time navigates to `/links` with `The link expires at <time>.`, and the row shows the time. A submission of an earlier time shows `must be after the time now`. A short code of a link of a different user navigates to `/links` with `You own no link with this short code.` A link whose time of expiration is past navigates to `/links` with the message of `:expired`. A `LinkExpirationSet` of the same link after the mount, with a time that is past at the submission, gives the message of `:expired`.
-- The list: a row shows `Never` and `#expire-<short code>` given no expiration. A row shows the time and `#expire-<short code>` given a later time of expiration. A row shows `Expired` and no `#expire-<short code>` given a time of expiration that is past.
+- The list: a row shows `Never` and `#expire-<short code>` with `Expire` given no expiration. A row shows the time and `#expire-<short code>` with `Change expiration` given a later time of expiration. A row shows `Expired` and no `#expire-<short code>` given a time of expiration that is past.
 - The router: the test of the first segments of the page routes still passes.
 - The existing tests pass, with `ResolvedLink` replaced by `LinkOfShortCode` in the tests of the resolution.
 
@@ -118,3 +118,4 @@ An agent in a session other than the session of the author inspected the code, a
 Authored by Nicholas Henry on Fri Oct 23 2026 at 8:55:44 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:23:40 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:53:57 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 5:11:28 PM EDT

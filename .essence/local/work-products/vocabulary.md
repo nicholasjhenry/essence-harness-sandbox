@@ -20,7 +20,8 @@ The terms of the domain of the link shortener. Each definition is a genus and a 
 - **resolution** — an event in which the link shortener finds the target URL of the link of one short URL, and sends the person to that target URL. It differs from the link, which the resolution reads and does not change.
 - **deletion** — an event in which the link shortener removes one link, at the request of the owner of the link. After the deletion, the short URL of the link resolves to no target URL, and no new link gets its short code. It differs from a resolution, which reads the link and does not change it.
 - **expiration** — an event in which the link shortener sets the time of expiration of one link, at the request of the owner of the link. From the time of expiration, the short URL of the link resolves to no target URL, and the link still exists. It differs from a deletion, which removes the link at once.
-- **time of expiration** — the time from which the short URL of one link resolves to no target URL. The latest expiration of the link gives it. A link with no expiration has no time of expiration. It differs from the time of an expiration, which is the time at which the owner set it.
+- **time of expiration** — the time from which the short URL of one link resolves to no target URL. The latest expiration of the link gives it. A link with no expiration has no time of expiration. It differs from the time of setting, which is the time at which the owner set it.
+- **time of setting** — the time at which the owner of one link requested one expiration of the link. It differs from the time of expiration, which the expiration sets.
 - **login token** — a secret of one use, made by the link shortener for one email address, that lets a person log in as the user of that email address. It differs from a session token, which a browser holds after the login.
 - **login link** — a URL of the link shortener whose path holds one login token, sent by email to the email address of the login token. It differs from a short URL, which refers to a target URL.
 - **login session** — a period in which the link shortener knows the person at one browser as one user, from the redemption of a login token to the logout. It differs from a user, who can have zero or more login sessions.
@@ -35,3 +36,4 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 10:55:34 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 7:57:58 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:55:25 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:52:38 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 5:11:28 PM EDT

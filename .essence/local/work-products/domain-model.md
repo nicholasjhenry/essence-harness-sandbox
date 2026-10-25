@@ -63,8 +63,8 @@ The properties and the associations of each concept of the domain vocabulary, in
 ### Expiration
 
 - **Properties:**
-  - time of expiration — exactly one. It is after the time of the expiration.
-  - time of the expiration — exactly one. The time at which the owner set the expiration.
+  - time of expiration — exactly one. It is after the time of setting.
+  - time of setting — exactly one. The time at which the owner set the expiration.
 - **Associations:**
   - an expiration sets the time of expiration of exactly one link, which has an owner.
   - an expiration is requested by the owner of the link.
@@ -171,7 +171,7 @@ The properties and the associations of each concept of the domain vocabulary, in
 7. A link with an owner must not be made, other than by a login session of the owner.
 8. A link must not be deleted, other than by a login session of its owner.
 9. A link must not get an expiration, other than by a login session of its owner.
-10. The time of expiration of an expiration must be after the time of the expiration.
+10. The time of expiration of an expiration must be after the time of setting of the expiration.
 11. A link whose time of expiration is past must not get an expiration.
 
 ## Notes
@@ -243,3 +243,4 @@ Changed by Nicholas Henry on Sat Oct 24 2026 at 9:26:28 PM EDT
 Changed by Nicholas Henry on Sat Oct 24 2026 at 9:55:25 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:29:32 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:52:38 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 5:11:28 PM EDT

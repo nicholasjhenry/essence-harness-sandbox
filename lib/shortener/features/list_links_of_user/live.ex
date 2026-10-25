@@ -96,7 +96,7 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
             id={"expire-#{listed.link.short_code}"}
             navigate={~p"/links/#{listed.link.short_code}/expiration"}
           >
-            Expire
+            {expire_text(listed.expires_at)}
           </.link>
         </:action>
         <:action :let={{_id, %{link: link}}}>
@@ -113,6 +113,9 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
     </Layouts.app>
     """
   end
+
+  defp expire_text(nil), do: "Expire"
+  defp expire_text(_expires_at), do: "Change expiration"
 
   defp expires_text(nil, _now), do: "Never"
 

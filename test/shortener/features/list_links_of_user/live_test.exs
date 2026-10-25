@@ -185,6 +185,8 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
 
       assert view |> element("#expire-Abc1234") |> render() =~
                ~s(href="/links/Abc1234/expiration")
+
+      assert view |> element("#expire-Abc1234") |> render() =~ "Expire"
     end
 
     test "shows the time and offers the expiration given a later time of expiration",
@@ -196,7 +198,7 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
 
       assert view |> element("#expires-Abc1234") |> render() =~ "2099-01-02 03:04 UTC"
       refute view |> element("#expires-Abc1234") |> render() =~ "Expired"
-      assert has_element?(view, "#expire-Abc1234")
+      assert view |> element("#expire-Abc1234") |> render() =~ "Change expiration"
     end
 
     test "shows expired and does not offer the expiration given a time of expiration that is past",
