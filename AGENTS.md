@@ -28,7 +28,7 @@ This repository installs the harness. The system essence is in `.essence/system/
 
 - the initialization-reads-the-system-and-local-essence-in-order rule — the read that the session starts with
 
-## The work of an endeavor is done in a sprite only at the request of the engineer, and the sprite is set up first
+## The work of an endeavor is done in a sprite only at the request of the engineer, the sprite is set up first, and a delegated endeavor runs in a Claude Code session in the sprite
 
 ### Rules
 
@@ -47,6 +47,18 @@ This repository installs the harness. The system essence is in `.essence/system/
   - **Classification:** behavioral
   - **Enforced:** when the GitHub CLI of a sprite is logged in
   - **Violation response:** the agent stops, and asks the engineer to revoke the token and to log the sprite in again.
+- **R4.** The work of a delegated endeavor in a sprite must be done by the Claude Code session that `./sprite-agent.sh <sprite> "<request>"` starts in the sprite, after each step of R2.
+  - **Classification:** behavioral
+  - **Enforced:** when the steps of R2 are done for a delegated endeavor
+  - **Violation response:** the agent stops its own work on the endeavor, and runs `./sprite-agent.sh` with the request of the engineer.
+- **R5.** The request that `./sprite-agent.sh` gives a session must be the request of the engineer, in the words of the engineer.
+  - **Classification:** structural
+  - **Enforced:** when `./sprite-agent.sh` is run
+  - **Violation response:** the agent ends the session with `sprite sessions kill`, and starts it again with the words of the engineer.
+- **R6.** The report of the start of a session in a sprite must give the command that attaches to the session.
+  - **Classification:** behavioral
+  - **Enforced:** when `./sprite-agent.sh` ends
+  - **Violation response:** the agent gives the command that the script printed, or lists the sessions with `sprite sessions list`, and gives the command.
 
 ### Facts
 
@@ -54,6 +66,9 @@ This repository installs the harness. The system essence is in `.essence/system/
 - **endeavor**, **engineer**, **agent** — `.essence/system/language/vocabulary.md`
 - **setup script** — `sprite-setup.sh`, in the root of the repository
 - **login script** — `sprite-auth.sh`, in the root of the repository
+- **start script** — `sprite-agent.sh`, in the root of the repository
+- **prompt template** — `sprite-agent-prompt.md`, in the root of the repository
+- **delegated endeavor** — an endeavor that has a delegation, by the `a-reviewer-overrides-entry-criteria-and-delegated-work-ends-in-a-pull-request` rule, in `.essence/system/rules/`
 
 ### Examples
 
@@ -63,6 +78,10 @@ This repository installs the harness. The system essence is in `.essence/system/
 - ❌ The agent runs `gh auth login --with-token` with the token in a tool call — breaks R3. The token is then in the transcript of the session.
 - ❌ The agent prints `gh auth status` with its `Token:` line — breaks R3. The line shows the start of the token. The login script removes the line.
 - ❌ The agent runs `./sprite-setup.sh` with no `--email` — breaks R2. The script stops. A new sprite has the global `user.email` `noreply@sprites.dev`, which no commit of the engineer takes.
+- ❌ The agent sets up the sprite of a delegated endeavor, and then edits the code in a local copy, and copies each file into the sprite — breaks R4. Two copies of the code then exist, and the agent keeps them the same by hand.
+- ❌ The agent starts the session with "build the availability check", and the engineer requested "implement: Check the availability of a short code" — breaks R5. The session then decides on words that the engineer did not write.
+- ❌ The agent reports that the session started, and gives no session ID — breaks R6. The engineer then has to list the sessions to attach.
+- ✅ The engineer requests "new endeavor: implement: Check the availability of a short code, completely delegated, develop in a sprite". The agent does each step of R2, and then runs `./sprite-agent.sh mcp-essence-harness-sandbox "<the request>"`. It reports `sprite attach -s mcp-essence-harness-sandbox 6735`. The engineer attaches, logs Claude Code in on the first attach, and the session does the endeavor.
 - ✅ The engineer requests "develop it in a sprite". The agent tells the engineer to expect the approval of 1Password, and runs `./sprite-auth.sh mcp-essence-harness-sandbox`. The engineer approves it. The script pipes the token from 1Password to `gh auth login --with-token` and `gh auth setup-git` on the sprite. The agent then clones the repository with its submodules, and runs `./sprite-setup.sh --name "Nicholas Henry" --email "<email>"` in `~/app`.
 
 ### Rationale
@@ -78,6 +97,10 @@ The setup script is in the repository, so it runs after the clone. The submodule
 
 Each step of the script can run again with no harm. The engineer approves the login, because the token is a secret of the engineer. The agent runs the login script, and the approval of 1Password stops it until the engineer acts. The login script reads the token from 1Password, and pipes it to the sprite. The token is then in no argument of a command, in no local file, and in no tool call of the agent. The GitHub connector of the sprites does not replace the login. It gives the REST API of GitHub, and not `git clone` or `git push`.
 
+A delegated endeavor needs no engineer until its pull request, so its session can run in the sprite, apart from the session that set the sprite up. R2, R4, R5, and R6 are the work of the agent on the computer of the engineer. The login of 1Password needs that computer. The session in the sprite reads this file too, and the prompt template tells it that the sprite is set up. It then does none of these steps.
+
+The start script fills in the prompt template with the request, the name and the URL of the sprite, and the clone. It starts `claude` in a TTY session in `~/app`. A TTY session keeps running after its client ends, so the script ends, and the session continues. The engineer attaches with `sprite attach`, and logs Claude Code in on the first attach. The credential then stays in the sprite, and no token passes through the agent. The prompt template states the delegation, the setup, the clone, and the pull request with the URL of the sprite. Each session therefore starts with the same facts.
+
 ### Related
 
 - the a-document-ends-with-its-author-and-each-amendment rule — the `user.name` that each provenance footer takes
@@ -91,3 +114,4 @@ Changed by Nicholas Henry on Sun Oct 25 2026 at 10:49:58 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 10:54:53 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:55:49 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 1:07:39 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 1:16:35 PM EDT
