@@ -12,7 +12,7 @@
 | design | 2026-10-25 |
 | design inspection | 2026-10-25 |
 | code | 2026-10-25 |
-| code inspection | |
+| code inspection | 2026-10-25 |
 | integration | |
 
 ## Request
@@ -100,9 +100,19 @@ An agent in a session other than the session of the author inspected the design,
 7. A test of the page for a logout after the mount.
 8. The record of the expiration of the link of a user names `owned_link.ex` in the slice of the expiration. The record is the design of that feature as it was inspected and integrated, so it does not change. This design records the move.
 
+### Code inspection
+
+An agent in a session other than the session of the author inspected the code, and accepted it. It applied the elixir-core, elixir-testing, and testing-names-given skills. `mix test` gave 269 tests with no failure in the sprite `change-the-target-url-of-a-link`, `mix format --check-formatted` passed, and `mix compile --warnings-as-errors --force` passed. It found no blocking defect. The code takes findings 1 and 2, and `mix test` then gave 269 tests with no failure again. It does not take findings 3 and 4:
+
+1. The test of the page of a link of the user checks the header, the subtitle, and the page title.
+2. The test of a value that is not a short code checks that no event is appended.
+3. The decision does not check the length of the new target URL. The decisions of the shortenings do not check it either, and the design does not state it. The changeset of the page checks it.
+4. The outcome `:append_condition_failed` of the page has no test of the page. The limits of the design state it.
+
 ---
 
 Authored by Nicholas Henry on Sun Oct 25 2026 at 11:21:14 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 5:30:08 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 5:33:15 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 5:36:34 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 5:38:10 PM EDT

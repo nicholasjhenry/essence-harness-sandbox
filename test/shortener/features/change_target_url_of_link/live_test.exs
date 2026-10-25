@@ -54,8 +54,12 @@ defmodule Shortener.Features.ChangeTargetUrlOfLink.LiveTest do
     test "shows the short URL and the target URL given a link of the user", %{conn: conn} do
       shorten("Abc1234", "ada@example.com")
 
-      {:ok, view, _html} =
+      {:ok, view, html} =
         conn |> log_in_user("ada@example.com") |> live(~p"/links/Abc1234/target-url")
+
+      assert html =~ "Change a target URL"
+      assert html =~ "The short URL stays the same, and goes to the new target URL."
+      assert page_title(view) =~ "Change a target URL"
 
       assert view |> element("#change-target-url-short-url") |> render() =~
                ~r"http://localhost:\d+/Abc1234"

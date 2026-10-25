@@ -145,6 +145,8 @@ defmodule Shortener.Features.ChangeTargetUrlOfLink.CommandHandlerTest do
 
       assert {:error, :not_found} =
                CommandHandler.handle(scope, "not-a-code", command(@new), @now)
+
+      assert changes() == []
     end
 
     test "returns not found given a new target URL with the ftp scheme" do
