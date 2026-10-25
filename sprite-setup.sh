@@ -70,7 +70,14 @@ mix setup
 echo "sprite-setup: the dependencies, the database, and the assets are set up."
 
 # A5. The service of the dev server. The proxy of the sprite routes its URL to
-# the port of the service, and starts the service on a request.
+# the port of the service, and starts the service on a request. PHX_HOST gives
+# the dev server the host of that URL, so that each URL the app makes is a URL
+# of the sprite and not of localhost.
+
+sprite_url="$(sprite-env info 2>/dev/null | sed -n 's/.*"sprite_url": *"\([^"]*\)".*/\1/p')"
+[ -n "$sprite_url" ] || fail "sprite-env info gives no sprite_url"
+sprite_host="${sprite_url#https://}"
+sprite_host="${sprite_host%%/*}"
 
 if sprite-env services get "$service" >/dev/null 2>&1; then
   sprite-env services delete "$service" >/dev/null
@@ -79,10 +86,11 @@ fi
 sprite-env services create "$service" \
   --cmd bash \
   --args "-c,mix ecto.migrate --quiet && exec mix phx.server" \
-  --env "PORT=$port" \
+  --env "PORT=$port,PHX_HOST=$sprite_host" \
   --dir "$project_root" \
   --http-port "$port" \
   --no-stream >/dev/null
 
 echo "sprite-setup: the service $service runs the dev server on port $port."
-echo "sprite-setup: open $(sprite-env info 2>/dev/null | sed -n 's/.*"sprite_url": *"\([^"]*\)".*/\1/p')"
+echo "sprite-setup: the dev server makes each URL with the host $sprite_host."
+echo "sprite-setup: open $sprite_url"
