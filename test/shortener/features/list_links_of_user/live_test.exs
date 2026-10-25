@@ -36,7 +36,7 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
       {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
 
       row = view |> element("#link-Abc1234") |> render()
-      assert row =~ ~r"http://localhost:\d+/Abc1234<"
+      assert row =~ ~r"http://localhost:\d+/Abc1234\s*<"
       assert row =~ "https://example.com/Abc1234"
       assert row =~ "2026-10-24 21:26 UTC"
       refute has_element?(view, "#no-links")
@@ -91,6 +91,17 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
       assert view |> element("#link-Summer1") |> render() =~ "https://example.com/path"
     end
 
+    test "opens each short URL in a new browser tab given a link", %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      assert has_element?(
+               view,
+               ~s|#link-Abc1234 a[href$="/Abc1234"][target="_blank"][rel="noopener noreferrer"]|
+             )
+    end
+
     test "shows the menu item of the page to a logged-in user", %{conn: conn} do
       {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
 
@@ -134,6 +145,19 @@ defmodule Shortener.Features.ListLinksOfUser.LiveTest do
 
       get(conn, "/Abc1234")
       {:ok, view, _html} = live(conn, ~p"/links")
+
+      assert view |> element("#resolutions-Abc1234") |> render() =~ ">1<"
+    end
+  end
+
+  describe "updating the resolutions of each link on the open page of all the links" do
+    test "shows the new count with no reload given a resolution of a link of the user",
+         %{conn: conn} do
+      shorten("Abc1234", "ada@example.com")
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/links")
+
+      {:ok, _resolved} =
+        ResolveTargetUrlOfShortUrl.CommandHandler.handle("Abc1234", DateTime.utc_now())
 
       assert view |> element("#resolutions-Abc1234") |> render() =~ ">1<"
     end

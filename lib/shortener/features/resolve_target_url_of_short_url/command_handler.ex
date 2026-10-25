@@ -10,6 +10,10 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler do
   The decision reads only the link of the short code. A deletion of the link
   between the read and the append fails the append, and the decision runs
   again. A second resolution of the same short URL does not fail it.
+
+  After the append, the resolution of a link of an owner is broadcast on the
+  topic of the owner. A link of a visitor has no owner, and its resolution
+  is not broadcast.
   """
 
   alias Shortener.DCB.Decider
@@ -31,9 +35,21 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler do
              [link: ResolvedLink.new(short_code)],
              &decide(now, &1)
            ) do
-      {:ok, ShortUrlResolved.from_event(event)}
+      resolved = ShortUrlResolved.from_event(event)
+      broadcast(resolved)
+      {:ok, resolved}
     end
   end
+
+  defp broadcast(%ShortUrlResolved{owner_email_address: nil}), do: :ok
+
+  defp broadcast(%ShortUrlResolved{owner_email_address: owner} = resolved),
+    do:
+      Phoenix.PubSub.broadcast(
+        Shortener.PubSub,
+        ShortUrlResolved.topic(owner),
+        {:short_url_resolved, resolved}
+      )
 
   defp decide(_now, %{link: nil}), do: {:error, :not_found}
 

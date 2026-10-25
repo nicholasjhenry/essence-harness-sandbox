@@ -132,6 +132,34 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandlerTest do
     end
   end
 
+  describe "broadcasting a resolution" do
+    test "broadcasts the resolution on the topic of the owner given a link of the owner" do
+      shorten("Abc1234", "https://example.com/a", "ada@example.com")
+      Phoenix.PubSub.subscribe(Shortener.PubSub, ShortUrlResolved.topic("ada@example.com"))
+
+      {:ok, _resolved} = CommandHandler.handle("Abc1234", @now)
+
+      assert_received {:short_url_resolved, %ShortUrlResolved{short_code: "Abc1234"}}
+    end
+
+    test "broadcasts nothing on the topic of the user given a link of a different user" do
+      shorten("Grace12", "https://example.com/g", "grace@example.com")
+      Phoenix.PubSub.subscribe(Shortener.PubSub, ShortUrlResolved.topic("ada@example.com"))
+
+      {:ok, _resolved} = CommandHandler.handle("Grace12", @now)
+
+      refute_received {:short_url_resolved, _resolved}
+    end
+
+    test "broadcasts nothing given a short code that no link has" do
+      Phoenix.PubSub.subscribe(Shortener.PubSub, ShortUrlResolved.topic("ada@example.com"))
+
+      {:error, :not_found} = CommandHandler.handle("Abc1234", @now)
+
+      refute_received {:short_url_resolved, _resolved}
+    end
+  end
+
   describe "deciding a resolution under a conflicting event" do
     test "fails the append given a deletion of the same link after the read" do
       shorten("Abc1234", "https://example.com/Abc1234", "ada@example.com")

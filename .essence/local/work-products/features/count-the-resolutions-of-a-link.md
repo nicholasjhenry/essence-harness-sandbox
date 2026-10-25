@@ -87,8 +87,52 @@ An agent in a session other than the session of the author inspected the code, a
 5. One test of the page uses `DateTime.utc_now()`. The time of a resolution is not shown on the page, so the test does not depend on it.
 6. No test drives the second read of the decider after a deletion, as finding 2 of the design inspection accepts.
 
+### Amendment: the count updates on the open page
+
+The engineer requested on Sun Oct 25 2026: "update the feature so when clicking on it in list-links-for-a-user the counter updates without refreshing". A user selects a short URL on `/links`. The target URL opens in a new browser tab, and the count of the link on `/links` goes up by 1, with no reload of the page.
+
+| Module | Operation | What changes |
+|---|---|---|
+| `Shortener.Shared.ShortUrlResolved` | `topic/1` | new. Takes an email address, and gives the PubSub topic of the resolutions of the links of that owner: `"short_url_resolved:"` and the tag of the owner. The topic holds no email address in clear, by decision 8 of the architecture. |
+| `Shortener.Features.ResolveTargetUrlOfShortUrl.CommandHandler` | `handle/2` | after the append, broadcasts `{:short_url_resolved, ShortUrlResolved.t()}` on `Shortener.PubSub`, on the topic of the owner. A link of a visitor has no owner, so its resolution broadcasts nothing. A failed append broadcasts nothing. |
+| `Shortener.Features.ListLinksOfUser.Live` | `mount/3` | subscribes to the topic of the user of the scope, if the socket is connected. |
+| `Shortener.Features.ListLinksOfUser.Live` | `handle_info/2` | new. On `{:short_url_resolved, _resolved}`, reads `LinkList.of/1` again, and resets the stream `:links` with the result. The page therefore still reads the events that it shows through the same projections, by decision 9 of the architecture. The message only tells the page to read again. |
+| `Shortener.Features.ListLinksOfUser.Live` | `render/1` | the anchor of the short URL gets `target="_blank"` and `rel="noopener noreferrer"`, so that `/links` stays open while the target URL opens. |
+
+The broadcast is not a part of the decision. It occurs after the append, and the event store is still the one record of each resolution. A page that is not open misses the message, and reads each resolution when it opens.
+
+Tests:
+
+- `CommandHandler.handle/2`: the test subscribes to the topic of the owner, resolves a link of the owner, and receives `{:short_url_resolved, %ShortUrlResolved{}}` of the short code. A resolution of a link of a different user sends nothing to the topic. A short code of no link sends nothing.
+- The page: the page of the owner is open, a resolution of a link of the owner occurs, and the row shows the new count with no reload. A resolution of a link of a different user changes no count on the page.
+- The page: the anchor of each short URL has `target="_blank"` and `rel="noopener noreferrer"`.
+
+The milestones design, design inspection, code, and code inspection were reached again for the amendment, on the same date. The dates of the Milestones table therefore do not change.
+
+#### Design inspection of the amendment
+
+An agent in a session other than the session of the author inspected the amendment, and accepted it. It applied the elixir-testing skill. It found no blocking defect. The code takes findings 1, 2, 4, and 6. It does not take finding 3, and it does not need to take finding 5:
+
+1. `mount/3` subscribes before it reads `LinkList.of/1`, so that no resolution between the read and the subscription is missed.
+2. The tests of the command handler subscribe before the act, and use `assert_received` and `refute_received`, because the broadcast comes from the test process.
+3. The first use of PubSub can be a decision of the architecture: a name of each topic, and a message that tells a page to read again. The inspector accepted it as a note of the design. The architecture does not change in this amendment.
+4. Each resolution makes each open page of the owner read the list again. One user on one computer is far below the limit of SQLite, as for the list itself.
+5. No test resolves a link of a visitor for the broadcast. The tests that resolve a link of a visitor show that the clause of no owner does not fail.
+6. This section states that the milestones were reached again.
+
+#### Code inspection of the amendment
+
+An agent in a session other than the session of the author inspected the code of the amendment, and accepted it. It applied the testing-names-given skill. It ran `mix test`, which gave 178 tests with no failure, and `mix format --check-formatted`, which passed. It found no blocking defect. The code takes findings 1 and 3, and `mix test` then gave 177 tests with no failure. It does not take finding 2:
+
+1. The test of the page "keeps each count given a resolution of a link of a different user" is removed. It passes also if the page subscribes to the resolutions of each user, so it shows nothing. The test of the command handler shows that a resolution of a link of a different user sends nothing to the topic of the user.
+2. No test shows that the resolution of a link of a visitor broadcasts nothing. A link of a visitor has no topic to subscribe to.
+3. The test of the new browser tab is in the describe block of the listing, because it tests the anchor of the list, and not the update.
+
+The formatter put the text of the anchor of the short URL on its own line. The test of the short URL in the row therefore permits white space before the end of the anchor.
+
 ---
 
 Authored by Nicholas Henry on Sun Oct 25 2026 at 11:21:14 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:31:43 AM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:35:46 AM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 12:44:30 PM EDT

@@ -7,6 +7,10 @@ defmodule Shortener.Shared.ShortUrlResolved do
   The event is tagged with the tag of the short code, and with the tag of
   the owner if the link has an owner, so that the list of the links of the
   owner reads it.
+
+  After the append, the resolution of a link of an owner is broadcast on the
+  topic of the owner, so that an open list of the links of the owner reads
+  again.
   """
 
   alias Shortener.DCB.Event
@@ -26,6 +30,13 @@ defmodule Shortener.Shared.ShortUrlResolved do
 
   @spec type_name() :: String.t()
   def type_name, do: @type_name
+
+  @doc """
+  The PubSub topic of the resolutions of the links of an owner. It holds the
+  tag of the owner, and no email address in clear.
+  """
+  @spec topic(String.t()) :: String.t()
+  def topic(email_address), do: "short_url_resolved:" <> EmailAddress.tag(email_address)
 
   @spec to_event(t()) :: Event.t()
   def to_event(%__MODULE__{} = fact) do
