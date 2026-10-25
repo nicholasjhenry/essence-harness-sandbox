@@ -12,21 +12,26 @@ defmodule Shortener.Shared.ShortCode do
   # The largest multiple of the size of the alphabet below 256. A random
   # byte at or above it is not used, so that each character is equally
   # probable.
-  @byte_limit 256 - rem(256, length(@alphabet))
+  @byte_limit 256 - rem(256, Kernel.length(@alphabet))
 
   @spec generate() :: String.t()
   def generate, do: generate([])
 
-  defp generate(characters) when length(characters) == @length, do: List.to_string(characters)
+  defp generate(characters) when Kernel.length(characters) == @length,
+    do: List.to_string(characters)
 
   defp generate(characters) do
     usable =
       for <<byte <- :crypto.strong_rand_bytes(@length)>>, byte < @byte_limit do
-        Enum.at(@alphabet, rem(byte, length(@alphabet)))
+        Enum.at(@alphabet, rem(byte, Kernel.length(@alphabet)))
       end
 
     generate(Enum.take(characters ++ usable, @length))
   end
+
+  @doc "The number of characters of a short code."
+  @spec length() :: pos_integer()
+  def length, do: @length
 
   @doc "True if the value has the form of a short code."
   @spec valid?(term()) :: boolean()

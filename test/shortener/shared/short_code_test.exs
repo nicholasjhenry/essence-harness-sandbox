@@ -60,4 +60,11 @@ defmodule Shortener.Shared.ShortCodeTest do
       end
     end
   end
+
+  describe "giving the length of a short code" do
+    test "gives 7, the number of characters of a generated short code" do
+      assert ShortCode.length() == 7
+      assert String.length(ShortCode.generate()) == ShortCode.length()
+    end
+  end
 end

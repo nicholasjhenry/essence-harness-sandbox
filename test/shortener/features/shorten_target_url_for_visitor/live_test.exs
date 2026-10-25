@@ -99,4 +99,67 @@ defmodule Shortener.Features.ShortenTargetUrlForVisitor.LiveTest do
       assert view |> element("#short-url") |> render() =~ ~r"http://localhost:\d+/[A-Za-z0-9]{7}<"
     end
   end
+
+  describe "counting the characters of the short code on the page" do
+    test "shows 0/7 given no short code in the field", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      assert has_element?(view, "#short-code-count", "0/7")
+    end
+
+    test "shows the number of characters given a change of the field", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      change(view, "abc")
+      assert has_element?(view, "#short-code-count", "3/7")
+
+      change(view, "Summer1")
+      assert has_element?(view, "#short-code-count", "7/7")
+    end
+
+    test "counts each space given a short code with a space at the end", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      change(view, "abc ")
+
+      assert has_element?(view, "#short-code-count", "4/7")
+    end
+
+    test "limits the field to seven characters with no debounce", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      assert has_element?(view, "#command_short_code[maxlength='7']")
+      refute has_element?(view, "#command_short_code[phx-debounce]")
+    end
+
+    test "shows 0/7 given a link made with a chosen short code", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      change(view, "Summer1")
+      submit(view, %{target_url: @url, short_code: "Summer1"})
+
+      assert has_element?(view, "#short-link")
+      assert has_element?(view, "#short-code-count", "0/7")
+    end
+
+    test "shows 3/7 and the form error given a submission of three characters", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      submit(view, %{target_url: @url, short_code: "abc"})
+
+      assert has_element?(view, "#short-code-count", "3/7")
+
+      assert has_element?(
+               view,
+               "#shorten-form",
+               "must be seven characters from A–Z, a–z, and 0–9"
+             )
+    end
+  end
+
+  defp change(view, short_code) do
+    view
+    |> form("#shorten-form", command: %{short_code: short_code})
+    |> render_change()
+  end
 end
