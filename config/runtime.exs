@@ -36,6 +36,13 @@ if config_env() == :dev do
         ~r"lib/shortener_web/(controllers|live|components)/.*\.(ex|heex)$"E
       ]
     ]
+
+  # A sprite routes its public HTTPS URL to the dev server. sprite-setup.sh
+  # sets PHX_HOST to the host of that URL, so that each URL the app makes,
+  # such as a short URL or a login link, is a URL of the sprite.
+  if host = System.get_env("PHX_HOST") do
+    config :shortener, ShortenerWeb.Endpoint, url: [host: host, port: 443, scheme: "https"]
+  end
 end
 
 if config_env() == :prod do
