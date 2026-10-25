@@ -28,6 +28,53 @@ This repository installs the harness. The system essence is in `.essence/system/
 
 - the initialization-reads-the-system-and-local-essence-in-order rule — the read that the session starts with
 
+## A sprite is set up before the work of an endeavor starts in it
+
+### Rules
+
+- **R1.** A sprite must be set up by each of the following steps, in this order, before the work of an endeavor starts in it:
+  1. The engineer logs the GitHub CLI of the sprite in, with a token that reads `essence-harness` and `agents-playbook`, and writes to `essence-harness-sandbox`.
+  2. The agent clones the repository with its submodules, in the sprite: `git clone --recurse-submodules https://github.com/nicholasjhenry/essence-harness-sandbox ~/app`.
+  3. The agent runs `./sprite-setup.sh --name "<name>" --email "<email>"` in `~/app`, with the `user.name` and the `user.email` of `git config` of the local repository.
+  - **Classification:** behavioral
+  - **Enforced:** when the work of an endeavor is to start in a sprite
+  - **Violation response:** the agent stops the work in the sprite, and does each step that is not done, in order.
+- **R2.** The GitHub token of a sprite must not be in a request or a tool call of the agent.
+  - **Classification:** behavioral
+  - **Enforced:** when the GitHub CLI of a sprite is logged in
+  - **Violation response:** the agent stops, and asks the engineer to revoke the token and to log the sprite in again.
+
+### Facts
+
+- **sprite** — a Fly.io Sprite: a Linux machine with persistent storage and its own URL, which the `sprite` CLI and the Fly MCP server reach
+- **endeavor**, **engineer**, **agent** — `.essence/system/language/vocabulary.md`
+- **setup script** — `sprite-setup.sh`, in the root of the repository
+
+### Examples
+
+- ❌ The agent clones the repository with no `--recurse-submodules` — breaks R1. The links in `.essence/system/` and `.claude/skills/` then do not resolve, and `sprite-setup.sh` stops at its first check.
+- ❌ The agent clones the repository before the engineer logs the sprite in — breaks R1. `essence-harness` and `agents-playbook` are private, so the clone gets no submodule.
+- ❌ The agent runs `gh auth login --with-token` with the token in a tool call — breaks R2. The token is then in the transcript of the session.
+- ❌ The agent runs `./sprite-setup.sh` with no `--email` — breaks R1. The script stops. A new sprite has the global `user.email` `noreply@sprites.dev`, which no commit of the engineer takes.
+- ✅ The engineer pipes the token from 1Password to `gh auth login --with-token` and `gh auth setup-git` on the sprite. The agent then clones the repository with its submodules, and runs `./sprite-setup.sh --name "Nicholas Henry" --email "<email>"` in `~/app`.
+
+### Rationale
+
+A sprite holds the code of an endeavor while the code is written and tested. Each sprite starts with no clone, no git identity, no dependencies, and no service.
+
+The setup script is in the repository, so it runs after the clone. The submodules are private, so the login comes before the clone. The script does each step that needs no secret:
+
+1. It sets the git identity. Each commit uses it, and each provenance footer uses `git config user.name`.
+2. It runs `mix setup`, which gets the dependencies, makes the database, and builds the assets.
+3. It creates the service `shortener`, which runs the dev server on port 8080. The proxy of the sprite routes the URL of the sprite to that port.
+
+Each step of the script can run again with no harm. The engineer does the login, because the token is a secret of the engineer.
+
+### Related
+
+- the a-document-ends-with-its-author-and-each-amendment rule — the `user.name` that each provenance footer takes
+
 ---
 
 Authored by Nicholas Henry on Sat Oct 17 2026 at 9:57:50 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 10:11:50 AM EDT
