@@ -11,8 +11,8 @@
 | domain walkthrough | 2026-10-24 |
 | design | 2026-10-24 |
 | design inspection | 2026-10-24 |
-| code | |
-| code inspection | |
+| code | 2026-10-24 |
+| code inspection | 2026-10-24 |
 | integration | |
 
 ## Design
@@ -75,6 +75,15 @@ An agent in a session other than the session of the author inspected the design.
 2. The comparison of the owner is exact. The login normalizes each email address, so the owner of each link is already normalized. The test of an owner in upper case is removed, because it tests nothing that the code does.
 3. The moduledocs of `ShortCodeClaimed`, `UserLinkCount`, `LinkTarget`, and `UserLinks` state what a deletion does to each one.
 4. The `:not_logged_in` branch of the controller occurs only in a logout between the plug and the decision. The test of the command handler checks it. The test of a visitor checks the plug.
+
+### Code inspection
+
+An agent in a session other than the session of the author inspected the code, and accepted it. It applied the code-review and the testing-names-given skills. `mix test` gave 156 tests with no failure in the sprite `mcp-essence-harness-sandbox`, and `mix format --check-formatted` passed. It found no blocking defect. These findings do not block, and the code does not take them:
+
+1. The code-review skill reported that the route of the deletion is outside the scope of a logged-in user. The report is false. The route is in the scope that pipes through `:require_authenticated_user`, and the test of a visitor shows the redirect to `/log-in`.
+2. No test drives the second read of the decider after a failed append of a deletion. The test of a second deletion shows the same result, `{:error, :not_found}`.
+3. The tests of the append conditions build each decision model with one projection, and not the query of `handle/3`. The tests of `handle/3` find a projection that `handle/3` drops.
+4. The `:not_logged_in` branch of the controller has no test of the controller, as finding 4 of the design inspection accepts.
 
 ---
 

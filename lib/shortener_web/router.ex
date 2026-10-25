@@ -42,6 +42,8 @@ defmodule ShortenerWeb.Router do
       live "/plans", AssignPlanToUser.Live
       live "/links", ListLinksOfUser.Live
     end
+
+    delete "/links/:short_code", DeleteLinkOfUser.Controller, :delete
   end
 
   if Application.compile_env(:shortener, :dev_routes) do

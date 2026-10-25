@@ -43,6 +43,16 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
           <span class="break-all">{link.target_url}</span>
         </:col>
         <:col :let={{_id, link}} label="Shortened">{shortened_text(link.shortened_at)}</:col>
+        <:action :let={{_id, link}}>
+          <.link
+            id={"delete-#{link.short_code}"}
+            href={~p"/links/#{link.short_code}"}
+            method="delete"
+            data-confirm="Delete this link? Its short URL stops working."
+          >
+            Delete
+          </.link>
+        </:action>
       </.table>
     </Layouts.app>
     """

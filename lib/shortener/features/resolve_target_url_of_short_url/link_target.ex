@@ -1,11 +1,11 @@
 defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.LinkTarget do
   @moduledoc """
   The target URL of the link of a short code, or `nil` if no link has the
-  short code.
+  short code or the link is deleted.
   """
 
   alias Shortener.DCB.Projection
-  alias Shortener.Shared.{LinkShortened, ShortCode}
+  alias Shortener.Shared.{LinkDeleted, LinkShortened, ShortCode}
 
   @spec new(String.t()) :: Projection.t()
   def new(short_code) do
@@ -14,7 +14,8 @@ defmodule Shortener.Features.ResolveTargetUrlOfShortUrl.LinkTarget do
       handlers: %{
         LinkShortened.type_name() => fn _target_url, event ->
           LinkShortened.from_event(event).target_url
-        end
+        end,
+        LinkDeleted.type_name() => fn _target_url, _event -> nil end
       },
       tags: [ShortCode.tag(short_code)]
     }
