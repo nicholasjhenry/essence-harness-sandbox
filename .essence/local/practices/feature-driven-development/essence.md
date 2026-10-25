@@ -124,6 +124,8 @@ A software system is made as a list of small features of value to the customer, 
   - **Needed by:** Build by feature, for the code milestone.
 - **Inspect the code of a feature** — a practice with an activity in Test the System that gives the acceptance or the rejection of the code of a feature, by an inspector who is not its author.
   - **Needed by:** Build by feature, for the code inspection milestone.
+- **Merge a unit of work** — a practice with an activity in Track Progress that gives the squash merge of a work branch into the branch of the build, at the request of the engineer.
+  - **Needed by:** Build by feature, for the integration milestone.
 
 ---
 
@@ -147,3 +149,4 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 12:12:38 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:23:48 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:41:36 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 9:09:17 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 11:14:20 AM EDT

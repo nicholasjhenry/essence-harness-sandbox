@@ -15,7 +15,7 @@
 - **R3.** The code of a feature must be merged into the branch of the build when the feature reaches the integration milestone.
   - **Classification:** behavioral
   - **Enforced:** when the code of a feature is merged
-  - **Violation response:** the agent does not record the integration milestone. It merges the code into the branch of the build, and runs the test command of the build there.
+  - **Violation response:** the agent removes the record of the integration milestone. It records the milestone again, and merges the code, by the `the-integration-milestone-is-recorded-on-the-work-branch-of-its-feature` rule.
 
 ## Facts
 
@@ -62,7 +62,7 @@
   ```
 
 - ❌ The code of a feature is merged into a branch other than the branch of the build, and the integration milestone is recorded — breaks R3. The build then does not hold the feature.
-- ✅ The agent merges the code of a feature into the branch that the local rule states, and runs the test command of the rule there.
+- ✅ The agent runs the test command of the rule on the work branch of a feature, and records the integration milestone there. Then it squash-merges the work branch into the branch that the local rule states.
 
 ## Rationale
 
@@ -70,12 +70,13 @@ The integration milestone is a fact only if each reader checks it on the same br
 
 The extension does not know the build of a software system. Each software system keeps its code on its own branch, and runs its tests with its own command. Its local rule states both.
 
-A feature reaches the integration milestone on the branch of the build. Its code is merged into that branch, and the test command of the build passes on it. Before a feature reaches the integration milestone, the agent reads the rule of the build.
+A feature reaches the integration milestone on the branch of the build. Its code is merged into that branch, and the test command of the build passes on it. The test command runs on the work branch of the feature before the merge, and the record of the milestone is in the same merge as the code. Before a feature reaches the integration milestone, the agent reads the rule of the build.
 
 ## Related
 
 - the a-feature-reaches-its-milestones-in-order rule — the integration milestone
 - the a-local-rule-is-applied-in-place-of-a-system-rule-it-conflicts-with rule — where the local rule is
+- the the-integration-milestone-is-recorded-on-the-work-branch-of-its-feature rule — when the milestone is recorded, and how the code is merged
 
 ---
 
@@ -83,3 +84,4 @@ Authored by Nicholas Henry on Fri Oct 16 2026 at 8:16:38 PM EDT
 Changed by Nicholas Henry on Fri Oct 16 2026 at 8:29:52 PM EDT
 Changed by Nicholas Henry on Fri Oct 16 2026 at 9:11:24 PM EDT
 Changed by Nicholas Henry on Fri Oct 16 2026 at 9:20:37 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 11:14:20 AM EDT

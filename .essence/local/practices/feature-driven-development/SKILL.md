@@ -45,6 +45,7 @@ The frontmatter description drives auto-triggering. This section helps recognize
 | A feature is "nearly done", or its record holds a state | Compute the state from the last milestone it reached | the-state-of-a-feature-is-the-last-milestone-it-reached |
 | Progress is an estimate | Compute it from the milestone weights | the-progress-of-a-feature-is-the-sum-of-the-weights-of-its-milestones |
 | A feature is merged with no branch or test command stated | State the build in a local rule | the-build-is-stated-in-a-local-rule |
+| The integration milestone is recorded after the merge, on a branch of its own | Record it on the work branch of the feature, and squash-merge the two together | the-integration-milestone-is-recorded-on-the-work-branch-of-its-feature |
 | A feature record is moved, or names its endeavor | List it in the requirements document of the endeavor | the-backlog-is-each-feature-that-no-requirements-document-lists |
 | An endeavor has no feature | Plan at least one feature into it | a-requirements-document-lists-at-least-one-feature |
 | A feature exists only in a conversation | Write its feature record | each-feature-is-recorded-in-a-feature-record |
@@ -108,6 +109,7 @@ Each rule is a file in `rules/`, named for what it says.
 - **the-architecture-is-selected-before-the-first-feature-is-designed** — the design of a feature starts only after the engineer approved the architecture.
 - **a-feature-reaches-its-milestones-in-order** — domain walkthrough, design, design inspection, code, code inspection, and integration.
 - **the-build-is-stated-in-a-local-rule** — each software system states the branch and the test command of its build.
+- **the-integration-milestone-is-recorded-on-the-work-branch-of-its-feature** — the milestone is recorded on the work branch when the engineer requests the merge, after the test command passes there, and the work branch is squash-merged in the same activity.
 - **an-inspection-is-made-by-someone-other-than-the-author** — the engineer, or an agent that did not write the design or the code.
 - **the-state-of-a-feature-is-the-last-milestone-it-reached** — the state is computed and not recorded: `Listed` or `Planned` before the first milestone, then the condition that each milestone gives, from `Walked Through` to `Integrated`.
 - **each-milestone-carries-a-fixed-weight** — 1, 40, 3, 45, 10, and 1 percent.
@@ -137,3 +139,4 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 11:53:45 AM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:12:38 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:23:48 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:41:36 PM EDT
+Changed by Nicholas Henry on Sun Oct 25 2026 at 11:14:20 AM EDT
