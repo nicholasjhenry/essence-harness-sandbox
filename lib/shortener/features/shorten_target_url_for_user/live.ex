@@ -38,16 +38,7 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.Live do
           placeholder="https://example.com/a/long/path"
           phx-debounce="300"
         />
-        <.input
-          field={@form[:short_code]}
-          type="text"
-          label="Short code (optional)"
-          placeholder="Summer1"
-          phx-debounce="300"
-        />
-        <p id="short-code-hint" class="text-sm opacity-70 -mt-1 mb-3">
-          Seven characters from A–Z, a–z, and 0–9. Leave it empty to get a short code that the link shortener makes.
-        </p>
+        <.short_code_input field={@form[:short_code]} />
         <.button variant="primary" phx-disable-with="Shortening...">Shorten</.button>
       </.form>
 

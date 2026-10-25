@@ -100,4 +100,20 @@ defmodule Shortener.Features.ShortenTargetUrlForUser.LiveTest do
       refute has_element?(view, "#short-url")
     end
   end
+
+  describe "counting the characters of the short code on the page of the links of a user" do
+    test "shows the number of characters with a limit of seven given a change of the field",
+         %{conn: conn} do
+      {:ok, view, _html} = conn |> log_in_user("ada@example.com") |> live(~p"/user-links")
+
+      assert has_element?(view, "#short-code-count", "0/7")
+      assert has_element?(view, "#command_short_code[maxlength='7']")
+
+      view
+      |> form("#shorten-for-user-form", command: %{short_code: "abc"})
+      |> render_change()
+
+      assert has_element?(view, "#short-code-count", "3/7")
+    end
+  end
 end

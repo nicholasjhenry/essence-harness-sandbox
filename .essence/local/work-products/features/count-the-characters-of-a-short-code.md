@@ -11,8 +11,8 @@
 | domain walkthrough | 2026-10-25 |
 | design | 2026-10-25 |
 | design inspection | 2026-10-25 |
-| code | |
-| code inspection | |
+| code | 2026-10-25 |
+| code inspection | 2026-10-25 |
 | integration | |
 
 ## Request
@@ -85,6 +85,18 @@ The second inspection accepted the amended design. It found that the params of t
 
 5. The component reads the params by the key `Atom.to_string(field.field)`, because `field.field` is an atom.
 6. This section records the second verdict.
+
+### Code inspection
+
+An agent in a session other than the session of the author inspected the code, and accepted it. It applied the testing-names-given, elixir-testing, and elixir-core skills. `mix test` gave 185 tests with no failure in the sprite `mcp-essence-harness-sandbox`, `mix format --check-formatted` passed, and `mix compile --warnings-as-errors --force` passed. It found no blocking defect. The code takes findings 1 and 5, and `mix test` then gave 185 tests with no failure again. It does not take findings 2, 3, 4, 6, and 7:
+
+1. `ShortCode` calls `Kernel.length/1` by its full name, so that no reader takes the calls for the new `length/0`.
+2. `@length` stays a module attribute, because a guard and the regex read it.
+3. The component does the design: the params by their key, `maxlength` from `ShortCode.length/0`, and `aria-live="polite"`.
+4. The hint still says "Seven characters" as text. The design keeps the hint as before.
+5. The name of the test of the limit drops "given the page", which states no condition.
+6. One test of the user page checks the count and the limit together. They are one behavior.
+7. The tests act only through `render_change` and `render_submit`, and check only with `has_element?`.
 
 ---
 
