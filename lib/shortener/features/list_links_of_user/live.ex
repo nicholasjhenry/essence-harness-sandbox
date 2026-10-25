@@ -1,7 +1,13 @@
 defmodule Shortener.Features.ListLinksOfUser.Live do
   @moduledoc """
   The page on which a logged-in user sees each link that the user owns, the
-  newest first. The owner is the user of the login session.
+  newest first, with the number of its resolutions. The owner is the user
+  of the login session.
+
+  The page subscribes to the resolutions of the links of the user. On each
+  resolution, it reads the list again, so that the count changes with no
+  reload. A short URL opens in a new browser tab, so that the page stays
+  open.
   """
 
   use ShortenerWeb, :live_view
@@ -9,16 +15,34 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
   import ShortenerWeb.LinkComponents, only: [short_url_of: 1]
 
   alias Shortener.Features.ListLinksOfUser.LinkList
+  alias Shortener.Shared.ShortUrlResolved
 
   @impl true
   def mount(_params, _session, socket) do
-    links = LinkList.of(socket.assigns.current_scope.user.email_address)
+    email_address = socket.assigns.current_scope.user.email_address
+
+    # The subscription comes before the read, so that no resolution between
+    # the two is missed.
+    if connected?(socket),
+      do: Phoenix.PubSub.subscribe(Shortener.PubSub, ShortUrlResolved.topic(email_address))
+
+    links = LinkList.of(email_address)
 
     {:ok,
      socket
      |> assign(:page_title, "All your links")
      |> assign(:links_empty?, links == [])
-     |> stream(:links, links, dom_id: &"link-#{&1.short_code}")}
+     |> stream(:links, links, dom_id: &"link-#{&1.link.short_code}")}
+  end
+
+  @impl true
+  def handle_info({:short_url_resolved, _resolved}, socket) do
+    links = LinkList.of(socket.assigns.current_scope.user.email_address)
+
+    {:noreply,
+     socket
+     |> assign(:links_empty?, links == [])
+     |> stream(:links, links, reset: true)}
   end
 
   @impl true
@@ -36,14 +60,26 @@ defmodule Shortener.Features.ListLinksOfUser.Live do
       </p>
 
       <.table :if={!@links_empty?} id="links" rows={@streams.links}>
-        <:col :let={{_id, link}} label="Short URL">
-          <a href={short_url_of(link)} class="link link-primary break-all">{short_url_of(link)}</a>
+        <:col :let={{_id, %{link: link}}} label="Short URL">
+          <a
+            href={short_url_of(link)}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link link-primary break-all"
+          >
+            {short_url_of(link)}
+          </a>
         </:col>
-        <:col :let={{_id, link}} label="Target URL">
+        <:col :let={{_id, %{link: link}}} label="Target URL">
           <span class="break-all">{link.target_url}</span>
         </:col>
-        <:col :let={{_id, link}} label="Shortened">{shortened_text(link.shortened_at)}</:col>
-        <:action :let={{_id, link}}>
+        <:col :let={{_id, %{link: link}}} label="Shortened">
+          {shortened_text(link.shortened_at)}
+        </:col>
+        <:col :let={{_id, listed}} label="Resolutions">
+          <span id={"resolutions-#{listed.link.short_code}"}>{listed.resolution_count}</span>
+        </:col>
+        <:action :let={{_id, %{link: link}}}>
           <.link
             id={"delete-#{link.short_code}"}
             href={~p"/links/#{link.short_code}"}
