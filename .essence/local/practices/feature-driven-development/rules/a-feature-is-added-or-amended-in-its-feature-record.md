@@ -9,7 +9,7 @@
 - **R2.** The milestone dates of a feature record must be cleared when the name of its feature changes after its domain walkthrough milestone.
   - **Classification:** behavioral
   - **Enforced:** when the name of a feature changes
-  - **Violation response:** the agent clears the milestone dates of the feature record.
+  - **Violation response:** the agent sets each milestone date of the feature record to `null`.
 - **R3.** A feature record must be renamed when the name of its feature changes.
   - **Classification:** behavioral
   - **Enforced:** when the name of a feature changes
@@ -49,3 +49,4 @@ Changed by Nicholas Henry on Fri Oct 16 2026 at 8:18:12 PM EDT
 Changed by Nicholas Henry on Fri Oct 16 2026 at 8:29:52 PM EDT
 Changed by Nicholas Henry on Fri Oct 16 2026 at 9:11:24 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 11:30:00 AM EDT
+Changed by Nicholas Henry on Wed Nov 4 2026 at 3:10:52 PM EST

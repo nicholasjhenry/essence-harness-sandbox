@@ -1,19 +1,16 @@
+---
+major-feature-set: Plan management
+feature-set: Assigning a plan
+plan-position: 1
+milestones:
+  domain-walkthrough: 2026-10-17
+  design: 2026-10-17
+  design-inspection: 2026-10-17
+  code: 2026-10-17
+  code-inspection: 2026-10-17
+  integration: 2026-10-17
+---
 # Assign the plan to a user
-
-**Major feature set:** Plan management
-**Feature set:** Assigning a plan
-**Plan position:** 1
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | 2026-10-17 |
-| design | 2026-10-17 |
-| design inspection | 2026-10-17 |
-| code | 2026-10-17 |
-| code inspection | 2026-10-17 |
-| integration | 2026-10-17 |
 
 ## Design
 

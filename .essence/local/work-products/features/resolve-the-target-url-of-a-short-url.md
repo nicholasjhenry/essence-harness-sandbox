@@ -1,19 +1,16 @@
+---
+major-feature-set: Link management
+feature-set: Resolving a short URL
+plan-position: 3
+milestones:
+  domain-walkthrough: 2026-10-17
+  design: 2026-10-17
+  design-inspection: 2026-10-17
+  code: 2026-10-17
+  code-inspection: 2026-10-17
+  integration: 2026-10-17
+---
 # Resolve the target URL of a short URL
-
-**Major feature set:** Link management
-**Feature set:** Resolving a short URL
-**Plan position:** 3
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | 2026-10-17 |
-| design | 2026-10-17 |
-| design inspection | 2026-10-17 |
-| code | 2026-10-17 |
-| code inspection | 2026-10-17 |
-| integration | 2026-10-17 |
 
 ## Design
 

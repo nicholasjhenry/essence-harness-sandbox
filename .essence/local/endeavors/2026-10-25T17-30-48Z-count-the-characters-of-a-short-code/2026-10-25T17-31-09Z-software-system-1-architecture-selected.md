@@ -1,14 +1,32 @@
+---
+alpha: software-system
+state: 1
+state-name: architecture-selected
+follows: .essence/local/endeavors/2026-10-25T15-27-26Z-count-the-resolutions-of-a-link/2026-10-25T15-27-55Z-software-system-1-architecture-selected.md
+checkpoints:
+  - text: The criteria for the selection of the architecture are agreed.
+    evidence:
+      - confirmation: .essence/local/log/activity/2026-10-25T17-31-09Z-start-the-endeavor-of-the-count-of-the-characters-of-a-short-code.md
+  - text: The hardware platforms are identified.
+    evidence:
+      - path: .essence/local/work-products/architecture.md
+  - text: The programming languages and the technologies are selected.
+    evidence:
+      - path: .essence/local/work-products/architecture.md
+  - text: The boundary of the system is known.
+    evidence:
+      - path: .essence/local/work-products/architecture.md
+  - text: The significant decisions about the organization of the system are made.
+    evidence:
+      - path: .essence/local/work-products/architecture.md
+  - text: The decisions to buy, build, or reuse are made.
+    evidence:
+      - path: .essence/local/work-products/architecture.md
+  - text: The key technical risks are agreed.
+    evidence:
+      - confirmation: .essence/local/log/activity/2026-10-25T17-31-09Z-start-the-endeavor-of-the-count-of-the-characters-of-a-short-code.md
+---
 # Software System — Architecture Selected
-
-Follows: `.essence/local/endeavors/2026-10-25T15-27-26Z-count-the-resolutions-of-a-link/2026-10-25T15-27-55Z-software-system-1-architecture-selected.md`
-
-- The criteria for the selection of the architecture are agreed. Evidence: the engineer, in `.essence/local/log/activity/2026-10-25T17-31-09Z-start-the-endeavor-of-the-count-of-the-characters-of-a-short-code.md`.
-- The hardware platforms are identified. Evidence: `.essence/local/work-products/architecture.md`.
-- The programming languages and the technologies are selected. Evidence: `.essence/local/work-products/architecture.md`.
-- The boundary of the system is known. Evidence: `.essence/local/work-products/architecture.md`.
-- The significant decisions about the organization of the system are made. Evidence: `.essence/local/work-products/architecture.md`.
-- The decisions to buy, build, or reuse are made. Evidence: `.essence/local/work-products/architecture.md`.
-- The key technical risks are agreed. Evidence: the engineer, in `.essence/local/log/activity/2026-10-25T17-31-09Z-start-the-endeavor-of-the-count-of-the-characters-of-a-short-code.md`.
 
 ---
 

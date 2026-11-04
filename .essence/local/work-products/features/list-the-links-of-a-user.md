@@ -1,19 +1,16 @@
+---
+major-feature-set: Link management
+feature-set: Maintaining a link
+plan-position: 6
+milestones:
+  domain-walkthrough: 2026-10-24
+  design: 2026-10-24
+  design-inspection: 2026-10-24
+  code: 2026-10-24
+  code-inspection: 2026-10-24
+  integration: 2026-10-24
+---
 # List the links of a user
-
-**Major feature set:** Link management
-**Feature set:** Maintaining a link
-**Plan position:** 6
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | 2026-10-24 |
-| design | 2026-10-24 |
-| design inspection | 2026-10-24 |
-| code | 2026-10-24 |
-| code inspection | 2026-10-24 |
-| integration | 2026-10-24 |
 
 ## Design
 

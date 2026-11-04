@@ -1,6 +1,14 @@
+---
+parent: 2026-10-18T02-09-14Z-build-the-first-features-of-the-link-shortener
+records:
+  - .essence/local/work-products/features/resolve-the-target-url-of-a-short-url.md
+  - .essence/local/work-products/features/send-the-login-link-to-a-user.md
+  - .essence/local/work-products/features/redeem-the-login-token-of-a-user.md
+  - .essence/local/work-products/features/end-the-login-session-of-a-user.md
+  - .essence/local/work-products/features/authorize-the-plan-assignment-of-a-user.md
+  - .essence/local/work-products/features/authorize-the-link-shortening-of-a-user.md
+---
 # Resolve short URLs and log in users — Requirements
-
-Parent: 2026-10-18T02-09-14Z-build-the-first-features-of-the-link-shortener
 
 The requirements of this endeavor are the features that its records list. The engineer requested them in the session on Sat Oct 17 2026:
 
@@ -18,15 +26,6 @@ A user logs in by a login link that the link shortener sends by email. A user as
 | 5 | Authorizing a user | It closes risk 4 of the architecture, and depends on Logging in a user. |
 
 Plan positions 1 and 2 are the feature sets of the parent endeavor.
-
-## Records
-
-- `.essence/local/work-products/features/resolve-the-target-url-of-a-short-url.md`
-- `.essence/local/work-products/features/send-the-login-link-to-a-user.md`
-- `.essence/local/work-products/features/redeem-the-login-token-of-a-user.md`
-- `.essence/local/work-products/features/end-the-login-session-of-a-user.md`
-- `.essence/local/work-products/features/authorize-the-plan-assignment-of-a-user.md`
-- `.essence/local/work-products/features/authorize-the-link-shortening-of-a-user.md`
 
 ---
 

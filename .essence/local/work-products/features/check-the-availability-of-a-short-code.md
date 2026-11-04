@@ -1,19 +1,16 @@
+---
+major-feature-set: Link management
+feature-set: Shortening a target URL
+plan-position: 2
+milestones:
+  domain-walkthrough: null
+  design: null
+  design-inspection: null
+  code: null
+  code-inspection: null
+  integration: null
+---
 # Check the availability of a short code
-
-**Major feature set:** Link management
-**Feature set:** Shortening a target URL
-**Plan position:** 2
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | |
-| design | |
-| design inspection | |
-| code | |
-| code inspection | |
-| integration | |
 
 ## Request
 

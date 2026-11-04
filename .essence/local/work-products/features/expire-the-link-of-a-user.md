@@ -1,20 +1,16 @@
+---
+major-feature-set: Link management
+feature-set: Maintaining a link
+plan-position: 6
+milestones:
+  domain-walkthrough: 2026-10-25
+  design: 2026-10-25
+  design-inspection: 2026-10-25
+  code: 2026-10-25
+  code-inspection: 2026-10-25
+  integration: 2026-10-25
+---
 # Expire the link of a user
-
-**Major feature set:** Link management
-**Feature set:** Maintaining a link
-**Plan position:** 6
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | 2026-10-25 |
-| design | 2026-10-25 |
-| design inspection | 2026-10-25 |
-| code | 2026-10-25 |
-| code inspection | 2026-10-25 |
-| integration | 2026-10-25 |
-
 
 ## Request
 
@@ -88,7 +84,6 @@ The list sets `now` only at the mount and on each resolution. A link whose time 
 - The router: the test of the first segments of the page routes still passes.
 - The existing tests pass, with `ResolvedLink` replaced by `LinkOfShortCode` in the tests of the resolution.
 
-
 ### Design inspection
 
 An agent in a session other than the session of the author inspected the design, and accepted it. It applied the elixir-core, elixir-testing, and elixir-ecto skills. It found no blocking defect. The design takes findings 1 to 5 and 7, and keeps finding 6 as a limit that the design states:
@@ -100,7 +95,6 @@ An agent in a session other than the session of the author inspected the design,
 5. The read of the page is the module `OwnedLink`, as `PlanOfUser` and `LinkList` are, and it checks the form of the short code.
 6. The list can show a time of expiration that passed while the page was open. The design states the limit. The page of the expiration and the decision refuse the expiration.
 7. The outcome `:append_condition_failed` of the page has no test of the page. The decider retries three times, so a test of the page cannot make it occur. The flash follows the pattern of the page of the plan.
-
 
 ### Code inspection
 

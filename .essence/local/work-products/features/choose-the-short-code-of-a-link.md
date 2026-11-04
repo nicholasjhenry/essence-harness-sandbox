@@ -1,19 +1,16 @@
+---
+major-feature-set: Link management
+feature-set: Shortening a target URL
+plan-position: 2
+milestones:
+  domain-walkthrough: 2026-10-24
+  design: 2026-10-24
+  design-inspection: 2026-10-24
+  code: 2026-10-24
+  code-inspection: 2026-10-24
+  integration: 2026-10-24
+---
 # Choose the short code of a link
-
-**Major feature set:** Link management
-**Feature set:** Shortening a target URL
-**Plan position:** 2
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | 2026-10-24 |
-| design | 2026-10-24 |
-| design inspection | 2026-10-24 |
-| code | 2026-10-24 |
-| code inspection | 2026-10-24 |
-| integration | 2026-10-24 |
 
 ## Design
 

@@ -1,19 +1,16 @@
+---
+major-feature-set: Link management
+feature-set: Maintaining a link
+plan-position: 6
+milestones:
+  domain-walkthrough: null
+  design: null
+  design-inspection: null
+  code: null
+  code-inspection: null
+  integration: null
+---
 # Change the target URL of a link
-
-**Major feature set:** Link management
-**Feature set:** Maintaining a link
-**Plan position:** 6
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | |
-| design | |
-| design inspection | |
-| code | |
-| code inspection | |
-| integration | |
 
 ## Request
 

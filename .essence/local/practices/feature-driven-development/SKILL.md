@@ -114,7 +114,7 @@ Each rule is a file in `rules/`, named for what it says.
 - **the-state-of-a-feature-is-the-last-milestone-it-reached** — the state is computed and not recorded: `Listed` or `Planned` before the first milestone, then the condition that each milestone gives, from `Walked Through` to `Integrated`.
 - **each-milestone-carries-a-fixed-weight** — 1, 40, 3, 45, 10, and 1 percent.
 - **the-progress-of-a-feature-is-the-sum-of-the-weights-of-its-milestones** — and the progress of a set is the mean of the progress of its features.
-- **each-feature-is-recorded-in-a-feature-record** — one file for each feature, in `.essence/local/work-products/features/`.
+- **each-feature-is-recorded-in-a-feature-record** — one file for each feature, in `.essence/local/work-products/features/`, with its sets, its plan position, and its milestone dates in its frontmatter.
 - **the-backlog-is-each-feature-that-no-requirements-document-lists** — the backlog is computed, and a feature record never moves.
 - **a-requirements-document-lists-at-least-one-feature** — an endeavor that applies this practice has at least one feature.
 - **a-feature-is-added-or-amended-in-its-feature-record** — a new feature is a new record, and a renamed feature loses its milestone dates.
@@ -141,3 +141,4 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 12:23:48 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:41:36 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:14:20 AM EDT
 Changed by Nicholas Henry on Wed Nov 4 2026 at 2:57:05 PM EST
+Changed by Nicholas Henry on Wed Nov 4 2026 at 3:10:52 PM EST

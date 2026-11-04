@@ -1,19 +1,16 @@
+---
+major-feature-set: User management
+feature-set: Authorizing a user
+plan-position: 5
+milestones:
+  domain-walkthrough: 2026-10-17
+  design: 2026-10-17
+  design-inspection: 2026-10-17
+  code: 2026-10-17
+  code-inspection: 2026-10-17
+  integration: 2026-10-17
+---
 # Authorize the plan assignment of a user
-
-**Major feature set:** User management
-**Feature set:** Authorizing a user
-**Plan position:** 5
-
-## Milestones
-
-| Milestone | Date reached |
-|---|---|
-| domain walkthrough | 2026-10-17 |
-| design | 2026-10-17 |
-| design inspection | 2026-10-17 |
-| code | 2026-10-17 |
-| code inspection | 2026-10-17 |
-| integration | 2026-10-17 |
 
 ## Design
 
