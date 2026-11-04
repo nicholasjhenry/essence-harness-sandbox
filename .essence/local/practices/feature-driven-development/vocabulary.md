@@ -25,6 +25,7 @@ The feature-driven-development skill's vocabulary: the terms its rules use that 
 - **weight** — the percent of the progress of a feature that one milestone gives. The six weights total 100 percent. It differs from progress, which is the sum of the weights a feature reached.
 - **state of a feature** — the condition of a feature that its milestones and the requirements documents give: Listed, Planned, Walked Through, Designed, Design Inspected, Coded, Code Inspected, or Integrated. It differs from a milestone, which is an event and not a condition.
 - **progress** — the percent of the milestone weights that a feature, a feature set, or a major feature set reached. It differs from the state of a feature, which names a stage and not a percent.
+- **progress report** — a table that holds the progress of each feature set and each major feature set, and the state of each feature, computed from the feature records, in `.essence/local/work-products/progress-report.md`. It differs from a feature record, which records one feature.
 - **inspection** — a review of the design or the code of a feature that ends when the inspector accepts it or rejects it. A design inspection reviews the design, and a code inspection reviews the code. It differs from a unit test, which runs the code.
 - **inspector** — the person or the agent who makes an inspection. It differs from the author, who wrote the design or the code that is inspected.
 - **build** — the version of the software system on the branch that a local rule of the software system names. It holds each feature that reached the integration milestone. The names of the build a feature list process and the build by feature process are the names that Feature-Driven Development gives them. It differs from the code of one feature, which is not part of the build until its integration.
@@ -60,3 +61,4 @@ Changed by Nicholas Henry on Fri Oct 16 2026 at 9:42:46 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 11:30:00 AM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 11:49:34 AM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 11:51:15 AM EDT
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:57:05 PM EST

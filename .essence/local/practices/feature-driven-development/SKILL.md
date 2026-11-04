@@ -93,7 +93,7 @@ The first three processes occur at the start of the work, and again when the dom
 
 **Record each milestone when the feature reaches it.** Write the date in the feature record. The state of the feature follows from the dates.
 
-**Report the progress from the feature records.** Compute the progress of each feature set and each major feature set. Show the result as a table, with the state of each feature.
+**Report the progress from the feature records.** Compute the progress of each feature set and each major feature set. Write the result as a table, with the state of each feature, in the progress report at `.essence/local/work-products/progress-report.md`. Show the table to the engineer.
 
 ---
 
@@ -140,3 +140,4 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 12:12:38 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:23:48 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:41:36 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:14:20 AM EDT
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:57:05 PM EST

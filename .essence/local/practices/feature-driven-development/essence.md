@@ -4,10 +4,16 @@
 
 A software system is made as a list of small features of value to the customer, and the progress of each feature is visible at each milestone.
 
+## Measures
+
+- the progress of each feature, as the sum of the weights of the milestones that it reached, read from its feature record
+- the progress of each feature set and each major feature set, as the mean of the progress of its features, read from the feature records
+
 ## Alphas
 
 - **Requirements** — the feature list states what the software system must do, as features of value to the customer.
 - **Feature** — a sub-alpha of Requirements.
+  - **Instances:** one or more for each Requirements of an endeavor.
   1. **Listed**
      - The name of the feature takes the feature template.
      - The feature belongs to exactly one feature set of exactly one major feature set.
@@ -47,17 +53,24 @@ A software system is made as a list of small features of value to the customer, 
 - **domain model** — a model of the domain of a software system, with the properties and the associations of each concept that the domain vocabulary defines, and a note for each decision, in `.essence/local/work-products/domain-model.md`.
   - **Describes:** Requirements.
   1. **Domain Covered**
-     - Each part of the domain has a walkthrough with the engineer.
-     - Each concept of each part is defined in the domain vocabulary.
-     - Each concept of each part is in the model, with its properties and its associations.
+     - Each of the following is true:
+       - Each part of the domain has a walkthrough with the engineer.
+       - Each concept of each part is defined in the domain vocabulary.
+       - Each concept of each part is in the model, with its properties and its associations.
 - **feature list** — the set of the features of a software system, each in a feature set of a major feature set.
   - **Describes:** Requirements.
-- **requirements document** — a work product of an endeavor that states the requirements of the endeavor, and lists the feature records that the endeavor tracks, at `requirements.md` in the directory of the endeavor.
+- **requirements document** — the work product that `language/vocabulary.md` defines. It lists the feature records that the endeavor tracks.
   - **Describes:** Requirements.
   - **Evidences:** Feature Planned, Requirements Coherent, Requirements Fulfilled.
 - **feature record** — a document that records one feature: its feature set, its major feature set, its plan position, the date of each milestone it reached, and its design, in `.essence/local/work-products/features/`.
   - **Describes:** Feature.
   - **Evidences:** Feature Listed, Feature Planned, Feature Walked Through, Feature Designed, Feature Design Inspected, Feature Coded, Feature Code Inspected, Feature Integrated.
+- **progress report** — a table that holds the progress of each feature set and each major feature set, and the state of each feature, computed from the feature records, in `.essence/local/work-products/progress-report.md`.
+  - **Describes:** Work.
+  1. **Summarized**
+     - The progress report holds the progress of each major feature set.
+  2. **Detailed**
+     - The progress report holds the progress of each feature set and the state of each feature, each computed from the feature records.
 - **source code** — the code and the unit tests that do a feature, merged into the build.
   - **Describes:** Software System.
   - **Evidences:** Feature Coded, Feature Integrated.
@@ -87,13 +100,13 @@ A software system is made as a list of small features of value to the customer, 
   - **Completion criteria:** Software System Architecture Selected.
   - **Competencies:** Development.
 - **Design by feature** — an activity that takes a feature through the domain walkthrough, design, and design inspection milestones.
-  - **Activity space:** Shape the System.
+  - **Activity space:** Understand the Requirements, Shape the System.
   - **Entry criteria:** Feature Planned, Software System Architecture Selected.
   - **Updates:** feature record.
   - **Completion criteria:** Feature Design Inspected.
   - **Competencies:** Analysis, Development, Testing.
 - **Build by feature** — an activity that takes a feature through the code, code inspection, and integration milestones.
-  - **Activity space:** Implement the System.
+  - **Activity space:** Implement the System, Test the System.
   - **Entry criteria:** Feature Design Inspected.
   - **Produces:** source code.
   - **Updates:** feature record.
@@ -101,7 +114,9 @@ A software system is made as a list of small features of value to the customer, 
   - **Competencies:** Development, Testing.
 - **Report the progress by feature** — an activity that computes the progress of each feature set and each major feature set from the feature records.
   - **Activity space:** Track Progress.
-  - **Completion criteria:** Work Under Control.
+  - **Produces:** progress report.
+  - **Updates:** progress report.
+  - **Completion criteria:** progress report Detailed.
   - **Competencies:** Management.
 
 ## Competencies
@@ -150,3 +165,9 @@ Changed by Nicholas Henry on Sat Oct 17 2026 at 12:23:48 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 12:41:36 PM EDT
 Changed by Nicholas Henry on Sat Oct 17 2026 at 9:09:17 PM EDT
 Changed by Nicholas Henry on Sun Oct 25 2026 at 11:14:20 AM EDT
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:46:38 PM EST
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:49:25 PM EST
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:57:05 PM EST
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:57:13 PM EST
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:57:20 PM EST
+Changed by Nicholas Henry on Wed Nov 4 2026 at 2:57:29 PM EST
